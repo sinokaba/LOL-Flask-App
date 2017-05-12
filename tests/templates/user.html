@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+LOL app
+{% endblock %}
+
+{% block body %}
+
+<div style="text-align:center">
+    <h1>Win or Lose</h1>
+    {% if name and region %}
+        <h1>Summoner Name: {{ name }}</h1>
+        <h1>Region: {{ region }}</h1>
+        {% if matches %}
+            {% for match in matches %}
+                {% if loop.index <= 10 %}
+                    <p>{{ match }}</p>
+                {% else %}
+                    <p class="moreMatches">{{ match }}</p>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" id="more">Show More</button>
+        {% endif %}
+        <br />
+        {% if icon %}
+            <img src= {{ icon }}>
+        {% endif %}
+
+    {% else %}
+        <h1>Error! Name and or region not entered</h1>
+    
+    {% endif %}
+    <br />
+    <a href="/">Back</a>
+
+</div>
+{% endblock %}
