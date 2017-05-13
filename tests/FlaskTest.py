@@ -28,7 +28,7 @@ def get_data():
 		#print(matches.match_data())
 		champ_icon = matches.get_champ_icon()
 		print(champ_icon)
-		return render_template("user.html", name=name, region=region, matches=matches.get_recent(), icon=champ_icon) 	
+		return render_template("user.html", name=name, region=region, matches=matches.get_recent(), icon=champ_icon, profile_icon=matches.get_summoner_icon()) 	
 	return render_template("user.html")
 
 if __name__ == "__main__":

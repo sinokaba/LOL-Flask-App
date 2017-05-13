@@ -7,6 +7,7 @@ URL = {
 	'champ_data': 'static-data/v{api_version}/champions/{champ_id}?champData=image',
 	'current_game': '/spectator/v{api_version}/active-games/by-summoner/{summonerId}',
 	'champ_img': 'http://ddragon.leagueoflegends.com/cdn/{static_ver}/img/champion/{champ}',
+	'profile_icons': 'http://ddragon.leagueoflegends.com/cdn/{static_ver}/img/profileicon/{icon_id}',
 	'static_ver': 'static-data/v{api_version}/versions'
 }	
 

@@ -1,0 +1,14 @@
+clean up match history, add win/lose, champion images, profile icons, win ratio, rank, etc
+
+search through various profiles perhaps 100k users per rank and make judgements on best champion build, best champion for each role etc
+calculate win percent chance with current solo q team that you get by searching the profile of each player
+smurf/troll detection
+
+match history gives recommended champions based on most played champ/best champ
+store frequently searched players data into database so won't have to make so many api calls and can do fast retrieval
+this is where peewee comes in
+
+improve website layout and such, perhaps use bootstrap
+
+how to go from raw json data->beautiful looking layout? perhaps loop through data using js and use jquery to present data in html
+or use framework like angularjs like last time.

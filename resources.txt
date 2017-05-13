@@ -1,0 +1,8 @@
+memcache: http://stackoverflow.com/questions/868690/good-examples-of-python-memcache-memcached-being-used-in-python
+
+flask ajax/js/html: http://flask.pocoo.org/docs/0.12/patterns/jquery/
+
+peewee(db): http://docs.peewee-orm.com/en/latest/peewee/quickstart.html
+https://www.youtube.com/watch?v=qla-KaMF-2Q
+
+angular_lol-webbapp ex: https://github.com/salvadorhol/angular-lol-webapp/blob/master/app/core/RiotAPI.php

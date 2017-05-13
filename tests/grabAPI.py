@@ -35,7 +35,7 @@ class APICalls:
 			)
 		return self._request(match20_url)
 
-	def get_matches_all(self, acc_id, cson="", start=0, end=10):
+	def get_matches_all(self, acc_id, start=0, end=10, cson=""):
 		if(cson != ""):
 			cson = "season=" + cson
 		matches_all_url = const.URL['match_history_all'].format(

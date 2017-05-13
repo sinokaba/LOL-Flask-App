@@ -9,7 +9,7 @@ LOL app
 <div style="text-align:center">
     <h1>Win or Lose</h1>
     {% if name and region %}
-        <h1>Summoner Name: {{ name }}</h1>
+        <h1>Summoner Name: {{ name }} <img src={{ profile_icon }}></h1>
         <h1>Region: {{ region }}</h1>
         {% if matches %}
             {% for match in matches %}
@@ -23,7 +23,7 @@ LOL app
         {% endif %}
         <br />
         {% if icon %}
-            <img src= {{ icon }}>
+            <img src={{ icon }}>
         {% endif %}
 
     {% else %}
