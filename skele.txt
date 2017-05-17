@@ -1,0 +1,6 @@
+		RioAPI
+		summoner(lvl, tier, win/loss, icon, account id, most played, best champ)
+		match history(40 or so, show 10 at a time)
+		individual match stats(kda, champ, champ icon, items, gold, allies/enemys and their kda and items and champs)
+
+create instance of riot api on region select, not whenever a new search is made
