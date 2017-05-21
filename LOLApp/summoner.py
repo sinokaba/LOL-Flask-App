@@ -1,15 +1,13 @@
 from .APIConstants import *
-from .config import *
-import urllib
+import urllib, time
 
 class Summoner:
 	def __init__(self, Name, Region, api_obj):
 		self.riot_api = api_obj
-		self.name = Name
-		self.name_nospace = self.name.replace(" ", "")
 		self.region = Region
-		self.account = self.riot_api.get_summoner_by_name(self.name_nospace)
+		self.account = self.riot_api.get_summoner_by_name(Name.replace(" ", ""))
 		self.acc_id = self.account["accountId"]
+		self.name = self.account["name"]
 		self.summ_id = self.account["id"]
 		#self.dd_cdn_ver = "7.2.9"
 		#print(self.name)
@@ -21,11 +19,7 @@ class Summoner:
 		return self.account["summonerLevel"]
 
 	def get_profile_icon(self):
-		print("name ", self.name)
-		return URL["profile_icon"].format(
-			region=self.region,
-			summonerName=self.name_nospace + ".png"
-			)
+		return self.get_icon_url("profileicon", self.account["profileIconId"])
 
 	def get_league_rank(self):
 		league_data = self.riot_api.get_league(self.summ_id)
@@ -45,9 +39,10 @@ class Summoner:
 	def get_match_history(self):
 		match_history_raw = self.riot_api.get_matches_rec(self.acc_id)
 		match_history = []
+		print("mhr: ", match_history_raw)
 		if("status" not in match_history_raw):
 			matches = match_history_raw["matches"]
-			for match in matches[:10]:
+			for match in matches[:11]:
 				match_history.append(self.match_data(match))
 			#print(summoner.acc_id)
 			#print(self.matches_10[0]["gameId"])
@@ -64,7 +59,8 @@ class Summoner:
 			game_data["queue"] = GAMEMODE[-1]
 		#if queue is not rank need to identify player by champ played
 		#error when number of matches requested > 10 because of rate limit
-		#print("game: ", game)
+		print("game: ", game)
+		#print("game participants: ", game["participants"])
 		for participant in game["participants"]:
 			#print(participant["player"]["summonerName"], " sum name: ", self.name)1
 			if(participant["championId"] == player_champ):
@@ -80,6 +76,7 @@ class Summoner:
 		return game_data
 
 	def get_icon_url(self, categ, icon_id):
+		time.sleep(1.1)
 		#print("icon = ", icon_id)
 		if(categ == "spell"):
 			if(icon_id not in SPELLS):
@@ -91,7 +88,7 @@ class Summoner:
 		elif(categ == "profileicon"):
 			name = str(icon_id) + ".png"
 		return URL["static_data_imgs"].format(
-				cdn_version=self.riot_api.get_latest_cdn_ver(),
+				cdn_version="7.9.2",
 				category=categ,
 				name=name
 				)

@@ -10,7 +10,7 @@ class APICalls:
 
 	def _request(self, api_ref, params = {}):
 		if("static-data" not in api_ref):
-			time.sleep(1)
+			time.sleep(1.1)
 		"""self.api_callcount += 1
 		if(self.api_callcount > 8):
 			time.sleep(5)
@@ -26,7 +26,8 @@ class APICalls:
 				rest=api_ref),
 			params=args 
 				)
-		print(response.url)
+		print("res url: ", response.url)
+		print("res headers: ", response.headers)
 		return response.json()
 
 	def get_summoner_by_name(self, name):

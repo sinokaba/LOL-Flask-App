@@ -24,14 +24,17 @@ LOL app
             {% for match in matches %}
                 {% if loop.index <= 10 %}
                     <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
+                    <p>{{ match["queue"] }}</p>
                     <img src = {{ match["champ"] }}>
                     <img src = {{ match["spell1"] }} style="align:left">
                     <img src = {{ match["spell2"] }} style="align:left">
                 {% else %}
-                    <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
-                    <img src = {{ match["champ"] }}>
-                    <img src = {{ match["spell1"] }} style="align:left">
-                    <img src = {{ match["spell2"] }} style="align:left">
+                    <div class="moreMatches">
+                        <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
+                        <img src = {{ match["champ"] }}>
+                        <img src = {{ match["spell1"] }} style="align:left">
+                        <img src = {{ match["spell2"] }} style="align:left">
+                    </div>
                 {% endif %}
             {% endfor %}
             <button type="submit" id="more">Show More</button>

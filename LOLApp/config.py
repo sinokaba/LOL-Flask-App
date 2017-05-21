@@ -32,4 +32,4 @@ GAMEMODE = {
 	76 : ["URF", "URF_5x5"],
 	-1 : ["Seasonal Gamemode"]
 }
-STATIC_DATA = ["spell", "champion", "item", "mastery", "rune", "passive"]
+STATIC_DATA = ["spell", "champion", "item", "mastery", "rune", "passive", "profileicon"]
