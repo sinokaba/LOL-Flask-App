@@ -6,7 +6,7 @@ window.onload = function(){
 		    var elements = document.getElementsByClassName("moreMatches");
 		    console.log(elements);
 		    for(var i=0; i < elements.length; i++){
-		    	elements[i].style.display = "block";
+		    	elements[i].style.display = "table-row";
 		    }
 		});
 	}

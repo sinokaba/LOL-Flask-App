@@ -6,3 +6,6 @@ peewee(db): http://docs.peewee-orm.com/en/latest/peewee/quickstart.html
 https://www.youtube.com/watch?v=qla-KaMF-2Q
 
 angular_lol-webbapp ex: https://github.com/salvadorhol/angular-lol-webapp/blob/master/app/core/RiotAPI.php
+
+
+react + flask:https://www.reddit.com/r/reactjs/comments/5fr08m/python_flask_and_react/

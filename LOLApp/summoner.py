@@ -6,6 +6,7 @@ class Summoner:
 		self.riot_api = api_obj
 		self.region = Region
 		self.account = self.riot_api.get_summoner_by_name(Name.replace(" ", ""))
+		print("account: ", self.account)
 		self.acc_id = self.account["accountId"]
 		self.name = self.account["name"]
 		self.summ_id = self.account["id"]
@@ -36,19 +37,20 @@ class Summoner:
 				return league
 
 
-	def get_match_history(self):
-		match_history_raw = self.riot_api.get_matches_rec(self.acc_id)
+	def get_ranked_match_history(self):
+		match_history_raw = self.riot_api.get_matches_all(self.acc_id)
 		match_history = []
 		print("mhr: ", match_history_raw)
 		if("status" not in match_history_raw):
 			matches = match_history_raw["matches"]
-			for match in matches[:11]:
+			for match in matches:
 				match_history.append(self.match_data(match))
 			#print(summoner.acc_id)
 			#print(self.matches_10[0]["gameId"])
 			return match_history
-		return None
+		return "Inactive"
 
+	"""
 	def match_data(self, match):
 		game = self.riot_api.get_match_data(match["gameId"])
 		player_champ = match["champion"]
@@ -67,17 +69,56 @@ class Summoner:
 				game_data["kills"] =  participant["stats"]["kills"]
 				game_data["deaths"] = participant["stats"]["deaths"]
 				game_data["assists"] = participant["stats"]["assists"]
+				game_data["team_id"] = participant["teamId"]
 				game_data["spell1"] = self.get_icon_url("spell", participant["spell1Id"])
 				game_data["spell2"] = self.get_icon_url("spell", participant["spell2Id"])
 				game_data["champ"] = self.get_icon_url("champion", participant["championId"])
-				game_data["team_id"] = participant["teamId"]
+				game_data["trinket"] = self.get_icon_url("item", participant["stats"]["item6"])
+				for mastery in participant["masteries"]:
+					if(mastery["masteryId"] in KEYSTONE_MASTERIES):
+						game_data["keystone"] = self.get_icon_url("mastery", mastery["masteryId"])
 			#print(game_data)
 		#print(match_history)
+		game_data["result"] = game["teams"][(game_data["team_id"]//100) - 1]["win"]
+		#game_duration_s = game["gameDuration"]
+		res = game["teams"][(game_data["team_id"]//100) - 1]["win"]
+		if(res == "Win"):
+			game_data["result"] = "victory"
+		else:
+			game_data["result"] = "defeat"
+
+		if(game["gameDuration"] <= 240):
+			game_data["result"] = "remake"
+		game_data["duration"] = game["gameDuration"]
+		game_date = time.strftime('%m/%d/%Y', time.gmtime(game["gameCreation"]/1000))
+		print("date: ", game_date)
+		game_data["date"] = game_date
 		return game_data
+	"""
+	def match_data(self, match):
+		game = self.riot_api.get_match_data(match["gameId"])
+		#if queue is not rank need to identify player by champ played
+		#error when number of matches requested > 10 because of rate limit
+		#print("game participants: ", game["participants"])
+		for participant in game["participants"]:
+			participant["name"] = game["participantIdentities"][participant["participantId"]-1]["player"]["summonerName"]
+			participant["spell1_img"] = self.get_icon_url("spell", participant["spell1Id"])
+			participant["spell2_img"] = self.get_icon_url("spell", participant["spell2Id"])
+			participant["champ_img"] = self.get_icon_url("champion", participant["championId"])
+			participant["trinket_img"] = self.get_icon_url("item", participant["stats"]["item6"])
+			for mastery in participant["masteries"]:
+				if(mastery["masteryId"] in KEYSTONE_MASTERIES):
+					participant["keystone_img"] = self.get_icon_url("mastery", mastery["masteryId"])
+			#print(game_data)
+		#print(match_history)
+		#game_duration_s = game["gameDuration"]
+		game["gameCreation"] = time.strftime('%m/%d/%Y', time.gmtime(game["gameCreation"]/1000))
+		print(game)
+		return game
 
 	def get_icon_url(self, categ, icon_id):
-		time.sleep(1.1)
 		#print("icon = ", icon_id)
+		time.sleep(1)
 		if(categ == "spell"):
 			if(icon_id not in SPELLS):
 				name = SPELLS[0]
@@ -85,8 +126,9 @@ class Summoner:
 				name = SPELLS[icon_id]
 		elif(categ == "champion"):
 			name = self.riot_api.get_champ_data(icon_id)["image"]["full"]
-		elif(categ == "profileicon"):
+		else:
 			name = str(icon_id) + ".png"
+
 		return URL["static_data_imgs"].format(
 				cdn_version="7.9.2",
 				category=categ,

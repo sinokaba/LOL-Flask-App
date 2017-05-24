@@ -26,7 +26,7 @@ GAMEMODE = {
 	33 : ["Normal Bot Intermediate", "BOT_5x5_INTERMEDIATE"],
 	52 : ["Twisted Treeline Bot", "BOT_TT_3x3"],
 	65 : ["ARAM", "ARAM_5x5"],
-	420 : ["Team Builder Ranked Solo", "TEAM_BUILDER_RANKED_SOLO"],
+	420 : ["Ranked Solo", "TEAM_BUILDER_RANKED_SOLO"],
 	440 : ["Ranked Flex", "RANKED_FLEX_SR"],
 	610 : ["Darkstar", "DARKSTAR_3x3"],
 	76 : ["URF", "URF_5x5"],

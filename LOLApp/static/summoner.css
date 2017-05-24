@@ -14,3 +14,53 @@ ul, li{
 h1{
 	text-align: center;
 }
+
+.champIcon{
+	width: 38%;
+}
+
+.acc img{
+	width: 19%;
+}
+
+table{
+	width: 60% !important;
+	margin: 0px auto;
+}
+
+#matchHistory{
+	margin: 0 auto;
+	float: none;
+}
+
+.remake{
+	background-color: #DCDCDC;
+}
+
+.remake:hover{
+	background-color: #c6c6c6 !important;
+}
+
+.match{
+	border-bottom: 3px solid white;
+}
+
+.defeat{
+	background-color: #ff9999;
+}
+
+.defeat:hover{
+	background-color: #FF6666 !important;
+}
+
+.victory{
+	background-color: #99cc99;
+}
+
+.victory:hover{
+	background-color: #66b266 !important;
+}
+
+.date{
+	font-size: 10px;
+}

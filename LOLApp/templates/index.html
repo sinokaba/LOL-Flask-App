@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    LOL app
+    Scryer's Analytics
 {% endblock %}
 
 {% block body %}
@@ -15,7 +15,7 @@
                 </ul>
             {% endif %}
         {% endwith %}
-        <h1>Win or Lose</h1>
+        <h1>Scryer's Analytics</h1>
     </div>
     <div class="row col-lg-4 col-lg-offset-4">
         <form action="{{ url_for('get_data') }}" method="POST">

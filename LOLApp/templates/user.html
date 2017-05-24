@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-LOL app
+    Scryer's Analytics
 {% endblock %}
 
 {% block body %}
@@ -10,10 +10,15 @@ LOL app
     <h1>Win or Lose</h1>
     {% if name and region %}
         <h1>Summoner Name: {{ name }}</h1>
-        <img src={{ profile_icon }}>
+        <img src={{ profile_icon }} style="align:left">
         <h1>Region: {{ region }}</h1>
         <h2>Level: {{ lvl }}</h2>
         {% if league %}
+            {% if league["tier"] == "Master" and league["tier"] == "Challenger" %}
+                <img src="/static/rank_icons/base-icons/{{ league['tier'] }}.png" style="align:left">
+            {% else %}
+                <img src="/static/rank_icons/tier-icons/{{ league['tier'] }}_{{ league['player']['rank'] }}.png" style="align:left">
+            {% endif %}
             <h2>Rank: {{ league["div_name"] }} - {{ league["tier"] }} 
                 {{ league["player"]["rank"] }} {{ league["player"]["leaguePoints"] }} LP</h2>
             <h3>Wins: {{ league["player"]["wins"] }} | Losses: {{ league["player"]["losses"] }}</h3>
@@ -21,25 +26,43 @@ LOL app
             <h2> Rank: Unranked </h2>
         {% endif %}
         {% if matches %}
+        <table class="table table-hover">
+            <tbody>
             {% for match in matches %}
                 {% if loop.index <= 10 %}
-                    <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
-                    <p>{{ match["queue"] }}</p>
-                    <img src = {{ match["champ"] }}>
-                    <img src = {{ match["spell1"] }} style="align:left">
-                    <img src = {{ match["spell2"] }} style="align:left">
+                    <tr class="match {{ match['result'] }}">
                 {% else %}
-                    <div class="moreMatches">
-                        <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
-                        <img src = {{ match["champ"] }}>
-                        <img src = {{ match["spell1"] }} style="align:left">
-                        <img src = {{ match["spell2"] }} style="align:left">
-                    </div>
-                {% endif %}
+                    <tr class="match {{ match['result'] }} moreMatches">     
+                {% endif %}               
+                        <td class="col-md-3">
+                            <ul class="info">
+                                <li class="q">{{ match["queue"] }}</li> 
+                                <li><span class="label label-info">{{ match["result"].upper() }}</span></li>
+                                <li class="duration">{{ match["duration"]//60 }}:{{ match["duration"]%60 }}</li>
+                                <li class="date">{{ match["date"] }}</li>
+                            </ul>
+                        </td>
+                        <td class="col-md-3">
+                            <div class="row">
+                                <img class="champIcon" src={{ match["champ"] }}>
+                            </div>
+                            <div class="row acc">
+                                <img class="spellIcon" src={{ match["spell1"] }}>
+                                <img class="spellIcon" src={{ match["spell2"] }}>
+                                <img class="trinket" src={{ match["trinket"] }}>
+                                <img class="keystone" src={{ match["keystone"] }}>
+                            </div>
+                        </td>
+                        <td class="col-md-3">{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</td>
+                        <td class="col-md-1"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></td>
+                    </tr>
             {% endfor %}
-            <button type="submit" id="more">Show More</button>
+            </tbody>
+        </table>
+        <br>
+        <button type="submit" id="more">Show More</button>
         {% else %}
-            <h2>Summoner inactive for too long. No recent matches available</h2>
+            <h2>No recent ranked matches discovered.</h2>
         {% endif %}
         <br />
         {% if icon %}
