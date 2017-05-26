@@ -34,27 +34,49 @@
                 {% else %}
                     <tr class="match {{ match['result'] }} moreMatches">     
                 {% endif %}               
-                        <td class="col-md-3">
+                        <td class="col-md-1">
                             <ul class="info">
                                 <li class="q">{{ match["queue"] }}</li> 
                                 <li><span class="label label-info">{{ match["result"].upper() }}</span></li>
-                                <li class="duration">{{ match["duration"]//60 }}:{{ match["duration"]%60 }}</li>
-                                <li class="date">{{ match["date"] }}</li>
+                                <li class="duration">{{ match["gameDuration"]//60 }}:{{ match["gameDuration"]%60 }}</li>
+                                <li class="date">{{ match["gameCreation"] }}</li>
                             </ul>
                         </td>
-                        <td class="col-md-3">
-                            <div class="row">
-                                <img class="champIcon" src={{ match["champ"] }}>
+                        <td class="col-md-4">
+                            <div class="col-md-8 champIcon">
+                                <img src={{ match["participants"][match["place"]]["champ_img"] }}>
                             </div>
-                            <div class="row acc">
-                                <img class="spellIcon" src={{ match["spell1"] }}>
-                                <img class="spellIcon" src={{ match["spell2"] }}>
-                                <img class="trinket" src={{ match["trinket"] }}>
-                                <img class="keystone" src={{ match["keystone"] }}>
+                            <div class="col-md-4 spells">
+                                <img class="spellIcon" src={{ match["participants"][match["place"]]["spell1_img"] }}>
+                                <img class="spellIcon" src={{ match["participants"][match["place"]]["spell2_img"] }}>
+                            </div>        
+                        </td>
+                        <td class="col-md-2 acc">
+                            <img class="keystone" src={{ match["participants"][match["place"]]["keystone_img"] }}>
+                            <img class="trinket" src={{ match["participants"][match["place"]]["item6_img"] }}>
+                        </td>
+                        <td class="col-md-3">
+                            <div class="items row">
+                                <img src={{ match["participants"][match["place"]]["item0_img"] }}>
+                                <img src={{ match["participants"][match["place"]]["item1_img"] }}>
+                                <img src={{ match["participants"][match["place"]]["item2_img"] }}>
+                            </div>
+                            <div class="items row">
+                                <img src={{ match["participants"][match["place"]]["item3_img"] }}>
+                                <img src={{ match["participants"][match["place"]]["item4_img"] }}>
+                                <img src={{ match["participants"][match["place"]]["item5_img"] }}>
                             </div>
                         </td>
-                        <td class="col-md-3">{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</td>
-                        <td class="col-md-1"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></td>
+                        <td class="col-md-2">
+                            <div class="row">
+                                {{ match["participants"][match["place"]]["stats"]["kills"] }} / 
+                                {{ match["participants"][match["place"]]["stats"]["deaths"] }} / 
+                                {{ match["participants"][match["place"]]["stats"]["assists"] }}
+                            </div>
+                            <div class="row">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            </div>
+                        </td>
                     </tr>
             {% endfor %}
             </tbody>

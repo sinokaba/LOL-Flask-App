@@ -24,7 +24,7 @@ class Summoner:
 
 	def get_league_rank(self):
 		league_data = self.riot_api.get_league(self.summ_id)
-		print("league data: ", league_data)
+		#print("league data: ", league_data)
 		if(len(league_data) < 1):
 			return None
 		league = {}
@@ -43,7 +43,7 @@ class Summoner:
 		print("mhr: ", match_history_raw)
 		if("status" not in match_history_raw):
 			matches = match_history_raw["matches"]
-			for match in matches:
+			for match in matches[:1]:
 				match_history.append(self.match_data(match))
 			#print(summoner.acc_id)
 			#print(self.matches_10[0]["gameId"])
@@ -100,25 +100,50 @@ class Summoner:
 		#if queue is not rank need to identify player by champ played
 		#error when number of matches requested > 10 because of rate limit
 		#print("game participants: ", game["participants"])
+		if(game["queueId"] in GAMEMODE):
+			game["queue"] = GAMEMODE[game["queueId"]][0]
+		else:
+			game["queue"] = GAMEMODE[-1]
+
 		for participant in game["participants"]:
 			participant["name"] = game["participantIdentities"][participant["participantId"]-1]["player"]["summonerName"]
 			participant["spell1_img"] = self.get_icon_url("spell", participant["spell1Id"])
 			participant["spell2_img"] = self.get_icon_url("spell", participant["spell2Id"])
 			participant["champ_img"] = self.get_icon_url("champion", participant["championId"])
-			participant["trinket_img"] = self.get_icon_url("item", participant["stats"]["item6"])
+
+			for i in range(7):
+				item_id = "item"+str(i)
+				if(participant["stats"][item_id] != 0):
+					participant[item_id+"_img"] = self.get_icon_url("item", participant["stats"][item_id])
+				else:
+					participant[item_id+"_img"] = "/static/no-item.png"
+
 			for mastery in participant["masteries"]:
 				if(mastery["masteryId"] in KEYSTONE_MASTERIES):
 					participant["keystone_img"] = self.get_icon_url("mastery", mastery["masteryId"])
+			if(participant["name"] == self.name):
+				game["place"] = participant["participantId"] - 1
 			#print(game_data)
 		#print(match_history)
 		#game_duration_s = game["gameDuration"]
+		print("item url: ", game["participants"][game["place"]]["item4_img"])
+		res = game["teams"][(game["participants"][game["place"]]["teamId"]//100) - 1]["win"]
+		if(res == "Win"):
+			game["result"] = "victory"
+		else:
+			game["result"] = "defeat"
+
+		if(game["gameDuration"] <= 240):
+			game["result"] = "remake"
+
 		game["gameCreation"] = time.strftime('%m/%d/%Y', time.gmtime(game["gameCreation"]/1000))
 		print(game)
 		return game
 
+
 	def get_icon_url(self, categ, icon_id):
 		#print("icon = ", icon_id)
-		time.sleep(1)
+		time.sleep(.9)
 		if(categ == "spell"):
 			if(icon_id not in SPELLS):
 				name = SPELLS[0]

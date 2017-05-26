@@ -10,5 +10,7 @@ window.onload = function(){
 		    }
 		});
 	}
-
+	//react scripts
+	//console.log("region: " + region + " | " + " name: " + name);
+	$(".table").footable()
 }

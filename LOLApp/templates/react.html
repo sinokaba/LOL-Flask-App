@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Flask React Tutorial</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.2/react.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.2/JSXTransformer.js"></script>
+  <meta charset="UTF-8">
+  <title>Hello World</title>
+  <script src="https://unpkg.com/react@latest/dist/react.js"></script>
+  <script src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 </head>
 <body>
-     <div id="mount-point"></div>
+    <div id="root"><h1 data-reactroot="">Hello, world!</h1></div>
+    <script type="text/babel">
+
+      ReactDOM.render(
+        <h1>Hello, yoo!</h1>,
+        document.getElementById('root')
+      );
+
+    </script>
+  
+
 </body>
-
-  <script type="text/jsx">
-     /*** @jsx React.DOM */
-    var FirstComponent = React.createClass({
-        render: function() {
-            return (<p1>Hello world.</p1>);
-        }
-    });
-    React.render(<FirstComponent />, document.getElementById('mount-point') );
-     </script>
-
 </html>

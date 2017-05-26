@@ -15,16 +15,8 @@ h1{
 	text-align: center;
 }
 
-.champIcon{
-	width: 38%;
-}
-
-.acc img{
-	width: 19%;
-}
-
 table{
-	width: 60% !important;
+	width: 70% !important;
 	margin: 0px auto;
 }
 
@@ -63,4 +55,38 @@ table{
 
 .date{
 	font-size: 10px;
+}
+
+.items img, .champIcon img, .acc img, .spells img{
+	border-radius: 15%;
+}
+
+.items img{
+	width: 30%;
+}
+
+.info{
+	margin-top: none;
+	padding: 1.250em;
+}
+
+.acc img{
+	width: 50%;
+}
+
+.spells img{
+	width: 80%;
+}
+
+.spells, .acc{
+	padding-left: 0.375em;
+	padding-top: 0.625em;
+}
+
+.champIcon{
+	padding-right: 0;
+}
+
+.champIcon img{
+	width: 90%;
 }
