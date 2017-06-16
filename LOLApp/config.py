@@ -1,3 +1,30 @@
+URL = {
+	'api_url': 'https://{platform}.api.riotgames.com/lol/{rest}',
+	'summoner_by_name': 'summoner/v{api_version}/summoners/by-name/{summonerName}',
+	'match_history_all': 'match/v{api_version}/matchlists/by-account/{accountId}?{queue}&season={current_season}',
+	'matches_recent': 'match/v{api_version}/matchlists/by-account/{accountId}/recent',
+	'match_data': 'match/v{api_version}/matches/{matchId}',
+	'champ_data': 'static-data/v{api_version}/champions/{champ_id}?champData=all',
+	'current_game': '/spectator/v{api_version}/active-games/by-summoner/{summonerId}',
+	'master_players': 'league/v3/masterleagues/by-queue/RANKED_SOLO_5x5',
+	'league': 'league/v{api_version}/leagues/by-summoner/{accountId}',
+	'static_data_imgs': 'http://ddragon.leagueoflegends.com/cdn/{cdn_version}/img/{category}/{name}',
+	'static_ver': 'static-data/v{api_version}/versions',
+	'profile_icon': 'http://avatar.leagueoflegends.com/{region}/{summonerName}',
+	'summoner_by_summid': 'summoner/v{api_version}/summoners/{summonerId}',
+}	
+
+API_VERSION = '3'
+
+API_KEY = 'RGAPI-918806e7-fc91-4da8-84a6-50f591dc9ee0'
+
+PLATFORMS = {
+	"NA": 'NA1',
+	"EUW": 'EUW1',
+	"EUNE": 'EUN1',
+	"KR": 'KR' 
+}
+
 SPELLS = {
 	12 : "SummonerTeleport.png",
 	3 : "SummonerExhaust.png",
@@ -32,4 +59,7 @@ GAMEMODE = {
 	76 : ["URF", "URF_5x5"],
 	-1 : ["Seasonal Gamemode"]
 }
+
+KEYSTONE_MASTERIES = [6161, 6162, 6164, 6361, 6362, 6363, 6261, 6262, 6263]
+
 STATIC_DATA = ["spell", "champion", "item", "mastery", "rune", "passive", "profileicon"]

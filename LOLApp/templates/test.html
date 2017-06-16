@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics
+{% endblock %}
+
+{% block body %}
+    <div id="chart" style="text-align:center;height:500px">
+        <embed type="image/svg+xml" src= {{ wr_chart|safe }} />
+    </div>
+{% endblock %}

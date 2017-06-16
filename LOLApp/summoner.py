@@ -1,4 +1,4 @@
-from .APIConstants import *
+from APIConstants import *
 import urllib, time
 
 class Summoner:
@@ -38,15 +38,32 @@ class Summoner:
 
 
 	def get_ranked_match_history(self):
+		print("account id: ", self.acc_id)
+		self.num_games = 0
+		self.vision = 0
+		self.objectives = 0
+		self.kda = 0
+		self.cs = 0
+		self.cs_dif = 0
+		self.lane_choice = {"JUNGLE":0, "TOP":0, "MIDDLE":0, "BOTTOM":0}
 		match_history_raw = self.riot_api.get_matches_all(self.acc_id)
 		match_history = []
 		print("mhr: ", match_history_raw)
 		if("status" not in match_history_raw):
 			matches = match_history_raw["matches"]
-			for match in matches[:1]:
+			for match in matches[:10]:
 				match_history.append(self.match_data(match))
 			#print(summoner.acc_id)
 			#print(self.matches_10[0]["gameId"])
+			stats_file = open(self.name + ".txt", "w")
+			stats_file.write("Over " + str(self.num_games) + " games stats: \n")
+			stats_file.write("Average vision score: " + str(self.vision/self.num_games) + "\n")
+			stats_file.write("Average objective score: " + str(self.objectives/self.num_games) + "\n")
+			stats_file.write("Average kda: " + str(self.kda/self.num_games) + "\n")
+			stats_file.write("Average cs: " + str(self.cs/self.num_games) + "\n")
+			stats_file.write("CS discrepency: " + str(self.cs_dif/self.num_games) + "\n")
+			stats_file.write("Lane choices: " + str(self.lane_choice) + "\n")
+			stats_file.close()
 			return match_history
 		return "Inactive"
 
@@ -96,10 +113,12 @@ class Summoner:
 		return game_data
 	"""
 	def match_data(self, match):
+		self.num_games += 1
 		game = self.riot_api.get_match_data(match["gameId"])
 		#if queue is not rank need to identify player by champ played
 		#error when number of matches requested > 10 because of rate limit
 		#print("game participants: ", game["participants"])
+		print(game)
 		if(game["queueId"] in GAMEMODE):
 			game["queue"] = GAMEMODE[game["queueId"]][0]
 		else:
@@ -109,41 +128,64 @@ class Summoner:
 			participant["name"] = game["participantIdentities"][participant["participantId"]-1]["player"]["summonerName"]
 			participant["spell1_img"] = self.get_icon_url("spell", participant["spell1Id"])
 			participant["spell2_img"] = self.get_icon_url("spell", participant["spell2Id"])
-			participant["champ_img"] = self.get_icon_url("champion", participant["championId"])
+			participant["champ_img"] = self.get_icon_url("champion", participant["championId"])			
 
-			for i in range(7):
-				item_id = "item"+str(i)
-				if(participant["stats"][item_id] != 0):
-					participant[item_id+"_img"] = self.get_icon_url("item", participant["stats"][item_id])
-				else:
-					participant[item_id+"_img"] = "/static/no-item.png"
-
-			for mastery in participant["masteries"]:
-				if(mastery["masteryId"] in KEYSTONE_MASTERIES):
-					participant["keystone_img"] = self.get_icon_url("mastery", mastery["masteryId"])
 			if(participant["name"] == self.name):
+				for i in range(7):
+					item_id = "item"+str(i)
+					if(participant["stats"][item_id] != 0):
+						participant[item_id+"_img"] = self.get_icon_url("item", participant["stats"][item_id])
+					else:
+						participant[item_id+"_img"] = "/static/no-item.png"
+
+				for mastery in participant["masteries"]:
+					if(mastery["masteryId"] in KEYSTONE_MASTERIES):
+						participant["keystone_img"] = self.get_icon_url("mastery", mastery["masteryId"])
 				game["place"] = participant["participantId"] - 1
+				self.vision += (participant["stats"]["wardsPlaced"] + 
+								participant["stats"]["wardsKilled"] + 
+								(participant["stats"]["visionWardsBoughtInGame"]*.5) +
+								(participant["stats"]["sightWardsBoughtInGame"]*.2))
+				self.objectives += ((participant["stats"]["neutralMinionsKilledEnemyJungle"] * .2)+
+									(participant["stats"]["damageDealtToObjectives"] * .01) +
+									participant["stats"]["inhibitorKills"] +
+									participant["stats"]["turretKills"])
+
+				res = participant["stats"]["win"]
+				if(res):
+					game["result"] = "victory"
+				else:
+					game["result"] = "defeat"
+
+				if(game["gameDuration"] <= 240):
+					game["result"] = "remake"
+					
+				try:
+					if(participant["stats"]["firstTowerAssist"]): 
+						self.objectives += 1.5
+					if(participant["stats"]["firstInhibitorKill"]):
+						self.objectives += 2
+					if(participant["stats"]["firstInhibitorAssist"]):
+						self.objectives += 1.5
+					self.kda += (participant["stats"]["kills"] + participant["stats"]["assists"])/participant["stats"]["deaths"]
+					self.cs += participant["stats"]["totalMinionsKilled"]
+					self.cs_dif += participant["timeline"]["csDiffPerMinDeltas"]["0-10"]
+				except:
+					KeyError
+				self.lane_choice[participant["timeline"]["lane"]] += 1
 			#print(game_data)
 		#print(match_history)
 		#game_duration_s = game["gameDuration"]
-		print("item url: ", game["participants"][game["place"]]["item4_img"])
-		res = game["teams"][(game["participants"][game["place"]]["teamId"]//100) - 1]["win"]
-		if(res == "Win"):
-			game["result"] = "victory"
-		else:
-			game["result"] = "defeat"
-
-		if(game["gameDuration"] <= 240):
-			game["result"] = "remake"
+		#print("item url: ", game["participants"][game["place"]]["item4_img"])
 
 		game["gameCreation"] = time.strftime('%m/%d/%Y', time.gmtime(game["gameCreation"]/1000))
-		print(game)
+		#print(game)
 		return game
 
 
 	def get_icon_url(self, categ, icon_id):
 		#print("icon = ", icon_id)
-		time.sleep(.9)
+		#time.sleep(.9)
 		if(categ == "spell"):
 			if(icon_id not in SPELLS):
 				name = SPELLS[0]

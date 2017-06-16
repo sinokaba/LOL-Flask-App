@@ -1,15 +1,23 @@
 URL = {
 	'api_url': 'https://{platform}.api.riotgames.com/lol/{rest}',
 	'summoner_by_name': 'summoner/v{api_version}/summoners/by-name/{summonerName}',
-	'match_history_all': 'match/v{api_version}/matchlists/by-account/{accountId}?endIndex={end}&{season}&beginIndex={start}',
+	'match_history_all': 'match/v{api_version}/matchlists/by-account/{accountId}?{queue}&season={current_season}',
 	'matches_recent': 'match/v{api_version}/matchlists/by-account/{accountId}/recent',
 	'match_data': 'match/v{api_version}/matches/{matchId}',
-	'champ_data': 'static-data/v{api_version}/champions/{champ_id}?champData=image',
-	'current_game': '/spectator/v{api_version}/active-games/by-summoner/{summonerId}',
-	'league': 'league/v{api_version}/leagues/by-summoner/{accountId}',
-	'static_data_imgs': 'http://ddragon.leagueoflegends.com/cdn/{cdn_version}/img/{category}/{name}',
+	'match_timeline': 'match/v{api_version}/timelines/by-match/{matchId}',
+	'champ': 'static-data/v{api_version}/champions/{champ_id}?champData=all',
+	'current_game': 'spectator/v{api_version}/active-games/by-summoner/{summonerId}',
+	'master_players': 'league/v3/masterleagues/by-queue/RANKED_SOLO_5x5',
+	'league': 'league/v{api_version}/leagues/by-summoner/{summonerId}',
+	'item':'static-data/v{api_version}/items/{item_id}?locale=en_US&tags=all',
+	'all_items': 'static-data/v{api_version}/items?locale=en_US&tags=all',
+	'all_champs': 'static-data/v{api_version}/champions?locale=en_US&tags=all&dataById=false',
 	'static_ver': 'static-data/v{api_version}/versions',
-	'profile_icon': 'http://avatar.leagueoflegends.com/{region}/{summonerName}'
+	'profile_icon': 'http://avatar.leagueoflegends.com/{region}/{summonerName}',
+	'summoner_by_summid': 'summoner/v{api_version}/summoners/{summonerId}',
+	'static_data_imgs': 'http://ddragon.leagueoflegends.com/cdn/{cdn_version}/img/{category}/{name}',
+	'items_json': 'http://ddragon.leagueoflegends.com/cdn/{cdn_ver}/data/en_US/item.json',
+	'champs_json': 'http://ddragon.leagueoflegends.com/cdn/{cdn_ver}/data/en_US/champion.json'
 }	
 
 API_VERSION = '3'
@@ -38,6 +46,8 @@ SPELLS = {
 	13 : "SummonerMana.png",
 	0 : "SummonerSiegeChampSelect1.png"
 }
+
+JUNGLE_CORE = ["1039","1041","1400","1401","1402","1416","3706","3711","3715","1412","1413","1414","1419","1408","1409","1410","1418"]
 
 GAMEMODE = {
 	8 : ["Twisted Treeline", "NORMAL_3x3"],

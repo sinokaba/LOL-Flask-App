@@ -5,24 +5,37 @@
 {% endblock %}
 
 {% block body %}
-    <div class="row">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class=flashes>
-                {% for message in messages %}
-                  <li><h1 id="invalidName">{{ message }}</h1></li>
-                {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <h1>Scryer's Analytics</h1>
-    </div>
-    <div class="row col-lg-4 col-lg-offset-4">
-        <form action="{{ url_for('get_data') }}" method="POST">
+    <div class="container" id="landing">
+        <div id="title">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class=flashes>
+                    {% for message in messages %}
+                      <li><h1 id="invalidName">{{ message }}</h1></li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+            <h1>Scryer's Analytics</h1>
+        </div>
+        <form id="search-form" action="{{ url_for('get_data') }}" method="POST">
             <div class="form-group row">
-                <label class="col-xs-6 col-md-4">Summoner Name</label>
+                <label class="col-xs-6 col-md-4">Champion</label>
                 <div class="col-xs-12 col-sm-6 col-md-8">
-                    <input name="name" class="form-control" id="summonerName" maxlength="16" size="16" type="text"/>
+                    <input name="name" class="form-control" id="champName" maxlength="16" size="16" type="text"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-xs-6 col-md-4 col-form-label">Tier</label>
+                <div class="col-xs-12 col-sm-6 col-md-8">
+                    <select id="rankTier" name="rankTier" class="form-control">
+                        <option value="all">All</option>
+                        <option value="diaUp">Diamond+</option>
+                        <option value="plat">Plat</option>
+                        <option value="gold">Gold</option>
+                        <option value="silver">Silver</option>
+                        <option value="bronze">Bronze</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group row">
@@ -38,7 +51,7 @@
             </div>
             <br/>
             <div class="mx-auto text-center">
-                <input type="submit" class="btn btn-primary" id="search" value="GO"/>
+                <input type="submit" class="btn btn-lg btn-block btn-primary" id="search" value="GO"/>
             </div>
         </form>
     </div>

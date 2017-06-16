@@ -1,0 +1,544 @@
+Data for Zac over 55 games. 
+Play rate: 0.07362784471218206
+Win rate: 0.5636363636363636 
+
+Data for Morgana over 54 games. 
+Play rate: 0.07228915662650602
+Win rate: 0.5740740740740741 
+
+Data for Galio over 27 games. 
+Play rate: 0.03614457831325301
+Win rate: 0.4444444444444444 
+
+Data for Zed over 67 games. 
+Play rate: 0.08969210174029452
+Win rate: 0.4626865671641791 
+
+Data for Ziggs over 79 games. 
+Play rate: 0.10575635876840696
+Win rate: 0.5443037974683544 
+
+Data for Lucian over 150 games. 
+Play rate: 0.20080321285140562
+Win rate: 0.5066666666666667 
+
+Data for Elise over 95 games. 
+Play rate: 0.12717536813922356
+Win rate: 0.5157894736842106 
+
+Data for Kled over 33 games. 
+Play rate: 0.04417670682730924
+Win rate: 0.696969696969697 
+
+Data for Karma over 165 games. 
+Play rate: 0.22088353413654618
+Win rate: 0.4909090909090909 
+
+Data for Orianna over 76 games. 
+Play rate: 0.10174029451137885
+Win rate: 0.4605263157894737 
+
+Data for Rakan over 12 games. 
+Play rate: 0.01606425702811245
+Win rate: 0.25 
+
+Data for Sion over 25 games. 
+Play rate: 0.03346720214190094
+Win rate: 0.48 
+
+Data for Caitlyn over 168 games. 
+Play rate: 0.2248995983935743
+Win rate: 0.4226190476190476 
+
+Data for Heimerdinger over 10 games. 
+Play rate: 0.013386880856760375
+Win rate: 0.6 
+
+Data for Warwick over 45 games. 
+Play rate: 0.060240963855421686
+Win rate: 0.5111111111111111 
+
+Data for Xayah over 20 games. 
+Play rate: 0.02677376171352075
+Win rate: 0.55 
+
+Data for Kassadin over 28 games. 
+Play rate: 0.03748326639892905
+Win rate: 0.5714285714285714 
+
+Data for Janna over 158 games. 
+Play rate: 0.21151271753681392
+Win rate: 0.43670886075949367 
+
+Data for Ryze over 68 games. 
+Play rate: 0.09103078982597054
+Win rate: 0.5 
+
+Data for Maokai over 76 games. 
+Play rate: 0.10174029451137885
+Win rate: 0.40789473684210525 
+
+Data for Ivern over 61 games. 
+Play rate: 0.08165997322623829
+Win rate: 0.6557377049180327 
+
+Data for Rek'Sai over 44 games. 
+Play rate: 0.058902275769745646
+Win rate: 0.5454545454545454 
+
+Data for Twitch over 107 games. 
+Play rate: 0.14323962516733602
+Win rate: 0.5327102803738317 
+
+Data for Thresh over 161 games. 
+Play rate: 0.21552878179384202
+Win rate: 0.5527950310559007 
+
+Data for Darius over 81 games. 
+Play rate: 0.10843373493975904
+Win rate: 0.5555555555555556 
+
+Data for Cassiopeia over 44 games. 
+Play rate: 0.058902275769745646
+Win rate: 0.4318181818181818 
+
+Data for Taric over 14 games. 
+Play rate: 0.018741633199464525
+Win rate: 0.5714285714285714 
+
+Data for Camille over 42 games. 
+Play rate: 0.05622489959839357
+Win rate: 0.42857142857142855 
+
+Data for Evelynn over 31 games. 
+Play rate: 0.041499330655957165
+Win rate: 0.41935483870967744 
+
+Data for Brand over 49 games. 
+Play rate: 0.06559571619812583
+Win rate: 0.4897959183673469 
+
+Data for Jhin over 234 games. 
+Play rate: 0.3132530120481928
+Win rate: 0.5341880341880342 
+
+Data for Akali over 26 games. 
+Play rate: 0.03480589022757698
+Win rate: 0.5 
+
+Data for Vel'Koz over 38 games. 
+Play rate: 0.050870147255689425
+Win rate: 0.47368421052631576 
+
+Data for Xerath over 23 games. 
+Play rate: 0.030789825970548863
+Win rate: 0.4782608695652174 
+
+Data for Nunu over 21 games. 
+Play rate: 0.028112449799196786
+Win rate: 0.6190476190476191 
+
+Data for Riven over 88 games. 
+Play rate: 0.11780455153949129
+Win rate: 0.5795454545454546 
+
+Data for Rammus over 12 games. 
+Play rate: 0.01606425702811245
+Win rate: 0.25 
+
+Data for Kennen over 45 games. 
+Play rate: 0.060240963855421686
+Win rate: 0.5111111111111111 
+
+Data for Ashe over 56 games. 
+Play rate: 0.0749665327978581
+Win rate: 0.39285714285714285 
+
+Data for Lulu over 107 games. 
+Play rate: 0.14323962516733602
+Win rate: 0.514018691588785 
+
+Data for Anivia over 34 games. 
+Play rate: 0.04551539491298527
+Win rate: 0.6176470588235294 
+
+Data for Yasuo over 99 games. 
+Play rate: 0.13253012048192772
+Win rate: 0.48484848484848486 
+
+Data for Udyr over 7 games. 
+Play rate: 0.009370816599732263
+Win rate: 0.42857142857142855 
+
+Data for Jayce over 122 games. 
+Play rate: 0.16331994645247658
+Win rate: 0.4180327868852459 
+
+Data for Graves over 135 games. 
+Play rate: 0.18072289156626506
+Win rate: 0.45185185185185184 
+
+Data for Olaf over 46 games. 
+Play rate: 0.06157965194109773
+Win rate: 0.4782608695652174 
+
+Data for LeBlanc over 52 games. 
+Play rate: 0.06961178045515395
+Win rate: 0.5961538461538461 
+
+Data for Kog'Maw over 99 games. 
+Play rate: 0.13253012048192772
+Win rate: 0.5353535353535354 
+
+Data for Viktor over 82 games. 
+Play rate: 0.10977242302543508
+Win rate: 0.4634146341463415 
+
+Data for Hecarim over 88 games. 
+Play rate: 0.11780455153949129
+Win rate: 0.4090909090909091 
+
+Data for Shen over 30 games. 
+Play rate: 0.040160642570281124
+Win rate: 0.5333333333333333 
+
+Data for Renekton over 101 games. 
+Play rate: 0.13520749665327977
+Win rate: 0.4752475247524752 
+
+Data for Gragas over 65 games. 
+Play rate: 0.08701472556894244
+Win rate: 0.5538461538461539 
+
+Data for Draven over 46 games. 
+Play rate: 0.06157965194109773
+Win rate: 0.41304347826086957 
+
+Data for Tahm Kench over 25 games. 
+Play rate: 0.03346720214190094
+Win rate: 0.64 
+
+Data for Shaco over 58 games. 
+Play rate: 0.07764390896921017
+Win rate: 0.5862068965517241 
+
+Data for Syndra over 86 games. 
+Play rate: 0.11512717536813923
+Win rate: 0.5116279069767442 
+
+Data for Ekko over 60 games. 
+Play rate: 0.08032128514056225
+Win rate: 0.4166666666666667 
+
+Data for Braum over 34 games. 
+Play rate: 0.04551539491298527
+Win rate: 0.4117647058823529 
+
+Data for Gangplank over 81 games. 
+Play rate: 0.10843373493975904
+Win rate: 0.5432098765432098 
+
+Data for Lee Sin over 241 games. 
+Play rate: 0.32262382864792505
+Win rate: 0.4730290456431535 
+
+Data for Talon over 66 games. 
+Play rate: 0.08835341365461848
+Win rate: 0.5303030303030303 
+
+Data for Bard over 56 games. 
+Play rate: 0.0749665327978581
+Win rate: 0.5 
+
+Data for Sivir over 15 games. 
+Play rate: 0.020080321285140562
+Win rate: 0.5333333333333333 
+
+Data for Kha'Zix over 127 games. 
+Play rate: 0.17001338688085676
+Win rate: 0.5669291338582677 
+
+Data for Annie over 38 games. 
+Play rate: 0.050870147255689425
+Win rate: 0.47368421052631576 
+
+Data for Rumble over 59 games. 
+Play rate: 0.07898259705488621
+Win rate: 0.5254237288135594 
+
+Data for Kindred over 14 games. 
+Play rate: 0.018741633199464525
+Win rate: 0.5714285714285714 
+
+Data for Vladimir over 39 games. 
+Play rate: 0.05220883534136546
+Win rate: 0.41025641025641024 
+
+Data for Ezreal over 210 games. 
+Play rate: 0.28112449799196787
+Win rate: 0.46190476190476193 
+
+Data for Ahri over 104 games. 
+Play rate: 0.1392235609103079
+Win rate: 0.4807692307692308 
+
+Data for Varus over 149 games. 
+Play rate: 0.1994645247657296
+Win rate: 0.5302013422818792 
+
+Data for Fizz over 55 games. 
+Play rate: 0.07362784471218206
+Win rate: 0.6 
+
+Data for Aurelion Sol over 18 games. 
+Play rate: 0.024096385542168676
+Win rate: 0.4444444444444444 
+
+Data for Jarvan IV over 25 games. 
+Play rate: 0.03346720214190094
+Win rate: 0.44 
+
+Data for Sona over 39 games. 
+Play rate: 0.05220883534136546
+Win rate: 0.5897435897435898 
+
+Data for Irelia over 40 games. 
+Play rate: 0.0535475234270415
+Win rate: 0.475 
+
+Data for Fiora over 86 games. 
+Play rate: 0.11512717536813923
+Win rate: 0.47674418604651164 
+
+Data for Alistar over 46 games. 
+Play rate: 0.06157965194109773
+Win rate: 0.5217391304347826 
+
+Data for Jax over 42 games. 
+Play rate: 0.05622489959839357
+Win rate: 0.35714285714285715 
+
+Data for Zyra over 77 games. 
+Play rate: 0.10307898259705489
+Win rate: 0.5324675324675324 
+
+Data for Nasus over 13 games. 
+Play rate: 0.01740294511378849
+Win rate: 0.15384615384615385 
+
+Data for Pantheon over 32 games. 
+Play rate: 0.0428380187416332
+Win rate: 0.59375 
+
+Data for Sejuani over 62 games. 
+Play rate: 0.08299866131191433
+Win rate: 0.5967741935483871 
+
+Data for Teemo over 18 games. 
+Play rate: 0.024096385542168676
+Win rate: 0.7777777777777778 
+
+Data for Amumu over 22 games. 
+Play rate: 0.029451137884872823
+Win rate: 0.5454545454545454 
+
+Data for Malphite over 28 games. 
+Play rate: 0.03748326639892905
+Win rate: 0.4642857142857143 
+
+Data for Soraka over 76 games. 
+Play rate: 0.10174029451137885
+Win rate: 0.5526315789473685 
+
+Data for Katarina over 49 games. 
+Play rate: 0.06559571619812583
+Win rate: 0.4489795918367347 
+
+Data for Nami over 119 games. 
+Play rate: 0.15930388219544847
+Win rate: 0.4369747899159664 
+
+Data for Wukong over 26 games. 
+Play rate: 0.03480589022757698
+Win rate: 0.5 
+
+Data for Blitzcrank over 103 games. 
+Play rate: 0.13788487282463185
+Win rate: 0.47572815533980584 
+
+Data for Mordekaiser over 9 games. 
+Play rate: 0.012048192771084338
+Win rate: 0.4444444444444444 
+
+Data for Taliyah over 29 games. 
+Play rate: 0.038821954484605084
+Win rate: 0.5172413793103449 
+
+Data for Lux over 47 games. 
+Play rate: 0.06291834002677377
+Win rate: 0.5319148936170213 
+
+Data for Malzahar over 69 games. 
+Play rate: 0.09236947791164658
+Win rate: 0.4927536231884058 
+
+Data for Aatrox over 5 games. 
+Play rate: 0.006693440428380187
+Win rate: 0.6 
+
+Data for Vi over 76 games. 
+Play rate: 0.10174029451137885
+Win rate: 0.42105263157894735 
+
+Data for Poppy over 74 games. 
+Play rate: 0.09906291834002677
+Win rate: 0.5945945945945946 
+
+Data for Dr. Mundo over 6 games. 
+Play rate: 0.008032128514056224
+Win rate: 0.3333333333333333 
+
+Data for Rengar over 59 games. 
+Play rate: 0.07898259705488621
+Win rate: 0.3898305084745763 
+
+Data for Veigar over 22 games. 
+Play rate: 0.029451137884872823
+Win rate: 0.5909090909090909 
+
+Data for Zilean over 24 games. 
+Play rate: 0.0321285140562249
+Win rate: 0.5 
+
+Data for Cho'Gath over 13 games. 
+Play rate: 0.01740294511378849
+Win rate: 0.6153846153846154 
+
+Data for Urgot over 18 games. 
+Play rate: 0.024096385542168676
+Win rate: 0.4444444444444444 
+
+Data for Nautilus over 73 games. 
+Play rate: 0.09772423025435073
+Win rate: 0.5068493150684932 
+
+Data for Leona over 30 games. 
+Play rate: 0.040160642570281124
+Win rate: 0.5 
+
+Data for Lissandra over 12 games. 
+Play rate: 0.01606425702811245
+Win rate: 0.4166666666666667 
+
+Data for Nocturne over 20 games. 
+Play rate: 0.02677376171352075
+Win rate: 0.55 
+
+Data for Tryndamere over 36 games. 
+Play rate: 0.04819277108433735
+Win rate: 0.5833333333333334 
+
+Data for Xin Zhao over 8 games. 
+Play rate: 0.0107095046854083
+Win rate: 0.625 
+
+Data for Karthus over 15 games. 
+Play rate: 0.020080321285140562
+Win rate: 0.6 
+
+Data for Tristana over 9 games. 
+Play rate: 0.012048192771084338
+Win rate: 0.5555555555555556 
+
+Data for Swain over 40 games. 
+Play rate: 0.0535475234270415
+Win rate: 0.625 
+
+Data for Twisted Fate over 73 games. 
+Play rate: 0.09772423025435073
+Win rate: 0.5068493150684932 
+
+Data for Gnar over 18 games. 
+Play rate: 0.024096385542168676
+Win rate: 0.5555555555555556 
+
+Data for Fiddlesticks over 10 games. 
+Play rate: 0.013386880856760375
+Win rate: 0.6 
+
+Data for Miss Fortune over 65 games. 
+Play rate: 0.08701472556894244
+Win rate: 0.36923076923076925 
+
+Data for Kayle over 8 games. 
+Play rate: 0.0107095046854083
+Win rate: 0.75 
+
+Data for Nidalee over 44 games. 
+Play rate: 0.058902275769745646
+Win rate: 0.45454545454545453 
+
+Data for Vayne over 70 games. 
+Play rate: 0.09370816599732262
+Win rate: 0.4714285714285714 
+
+Data for Jinx over 19 games. 
+Play rate: 0.025435073627844713
+Win rate: 0.631578947368421 
+
+Data for Diana over 14 games. 
+Play rate: 0.018741633199464525
+Win rate: 0.5714285714285714 
+
+Data for Illaoi over 14 games. 
+Play rate: 0.018741633199464525
+Win rate: 0.35714285714285715 
+
+Data for Master Yi over 13 games. 
+Play rate: 0.01740294511378849
+Win rate: 0.46153846153846156 
+
+Data for Singed over 27 games. 
+Play rate: 0.03614457831325301
+Win rate: 0.5185185185185185 
+
+Data for Kalista over 14 games. 
+Play rate: 0.018741633199464525
+Win rate: 0.6428571428571429 
+
+Data for Volibear over 11 games. 
+Play rate: 0.014725568942436412
+Win rate: 0.2727272727272727 
+
+Data for Skarner over 5 games. 
+Play rate: 0.006693440428380187
+Win rate: 0.6 
+
+Data for Quinn over 30 games. 
+Play rate: 0.040160642570281124
+Win rate: 0.5333333333333333 
+
+Data for Garen over 11 games. 
+Play rate: 0.014725568942436412
+Win rate: 0.5454545454545454 
+
+Data for Corki over 137 games. 
+Play rate: 0.18340026773761714
+Win rate: 0.48905109489051096 
+
+Data for Trundle over 11 games. 
+Play rate: 0.014725568942436412
+Win rate: 0.5454545454545454 
+
+Data for Shyvana over 24 games. 
+Play rate: 0.0321285140562249
+Win rate: 0.5416666666666666 
+
+Data for Azir over 5 games. 
+Play rate: 0.006693440428380187
+Win rate: 0.8 
+
+Data for Yorick over 4 games. 
+Play rate: 0.00535475234270415
+Win rate: 0.25 
+
