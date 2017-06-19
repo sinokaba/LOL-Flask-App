@@ -26,7 +26,7 @@ class APICalls:
 			params=args 
 				)
 		headers = response.headers
-		if("X-App-Rate-Limit-Count" in headers and int(headers["X-App-Rate-Limit-Count"][0:1]) >= 6):
+		if("X-App-Rate-Limit-Count" in headers and int(headers["X-App-Rate-Limit-Count"][0:1]) >= 5):
 			print("rate_limit: ", headers["X-App-Rate-Limit-Count"][0:1])
 			time.sleep(1.5)
 		if(response.status_code != 200):
@@ -110,25 +110,20 @@ class APICalls:
 			)
 		return self._request(league_url)
 
-	def get_item_data(self, item_id):
-		item_url = URL["item"].format(
-			api_version=API_VERSION,
-			item_id=item_id
-			)
-		return self._request(item_url)
+	def get_static_data(self, category):
+		if(category == "champions" or "summoner-spells"):
+			return self._request(URL["static_data"].format(
+				api_version=API_VERSION,
+				category=category
+				)+"&dataById=false")
+		else:
+			return self._request(URL["static_data"].format(
+				api_version=API_VERSION,
+				category=category
+				))
 
 	def get_master_players(self):
 		return self._request(URL["master_players"])
-
-	def get_all_items_data(self):
-		return self._request(URL["all_items"].format(
-			api_version=API_VERSION,
-			))
-
-	def get_all_champs_data(self):
-		return self._request(URL["all_champs"].format(
-			api_version=API_VERSION,
-			))
 
 	def get_all_champs_json(self):
 		with urllib.request.urlopen(URL["champs_json"].format(cdn_ver=self.curr_cdn_ver)) as url:

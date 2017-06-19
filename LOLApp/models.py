@@ -23,20 +23,20 @@ class Champions(BaseModel):
 		order_by = ('plays',)
 
 class Summoners(BaseModel):
-	account_id = IntegerField()
-	name = CharField(unique=True)
-	#icon = TextField()
+	accountId = IntegerField(unique=True)
+	name = CharField()
 	region = CharField()
-	league = TextField()
-	#champions = TextField()
-	matches = TextField()
-	#position_score = IntegerField()
-	#mechanics_score = IntegerField()
-	#vision_score = IntegerField()
-	#objective_score = IntegerField()
+	currentRank = CharField()
+	champions = TextField()
+	kda = FloatField()
+	rating = FloatField()
+	stats = TextField()
+	wins = IntegerField()
+	loses = IntegerField()
+	behavior = TextField()
 
 class GamesVisited(BaseModel):
-	match_id = IntegerField(unique=True)
+	matchId = IntegerField(unique=True)
 
 def initialize_db():
 	database.connect()
