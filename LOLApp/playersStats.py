@@ -1,7 +1,7 @@
 class PlayerStats:
 	def __init__(self, account_id, name, region, rank):
 		self.info = {"accountId":account_id, "name":name, "region":region, "currentRank":rank}
-		self.stats = {}
+		self.stats = {"kda":None}
 		self.wins = 0
 		self.loses = 0
 		self.rating = 0
@@ -9,7 +9,7 @@ class PlayerStats:
 		self.behavior = {}
 
 	def add_kda(self, kda):
-		if("kda" not in self.stats):
+		if(self.stats["kda"] is None):
 			self.stats["kda"] = {"kills":kda["kills"], "deaths":kda["deaths"], "assists":kda["assists"]}
 		else:
 			self.stats["kda"]["kills"] += kda["kills"]

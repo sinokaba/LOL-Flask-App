@@ -139,14 +139,16 @@ def react_test():
 @app.route("/crawl")
 def crawl():
 	global api
-	data = Champions.select().where(Champions.rank == "gold", Champions.region == "NA")
+	champ_data = Champions.select().where(Champions.rank == "diamondPlus", Champions.region == "NA")
+	player_data = Summoners.select().where(Summoners.region == "NA").order_by(Summoners.rating.desc())
 		#print("Champ id: ", champ.champ_id, " bans: ", champ.bans)
 		#print("Insufficient data.")
-	for champion in data:
+
+	for champion in champ_data:
 		if(champion.champId == 23):
 			champ = champion
-	def convert_to_dict(data):
-		return ast.literal_eval(data)
+	def convert_to_dict(champ_data):
+		return ast.literal_eval(champ_data)
 	def get_kda(kda):
 		if(kda["deaths"] == 0):
 			kda["deaths"] = 1
@@ -159,13 +161,15 @@ def crawl():
 	line_chart = pygal.HorizontalBar(height=1500, spacing=10, width=500)
 	info = ast.literal_eval(champ.info)
 	roles = ast.literal_eval(champ.roles)
-	line_chart.title = info["name"] + " Matchups"
+	line_chart.title = "Overall stats"
 	index = 0
 	champion = []
 	champ_wr = []
 	champ_pr = []
-	champ_rr = []
+	champ_rating = []
+	#champ_rr = []
 	champ_br = []
+	"""
 	for role in roles:
 		plays = champ.plays - roles[role]["count"]
 		for matchup,stats in roles[role]["matchups"].items():
@@ -175,29 +179,47 @@ def crawl():
 				champion.append(ast.literal_eval(enemy.info)["name"])
 				champ_wr.append(round((stats["wins"]/stats["against"])*100,2))
 				champ_pr.append(pick_rate_against)
-	"""
-	for champ in data:
+	
+	for champ in champ_data:
 		roles = ast.literal_eval(champ.roles)
-		if(role in roles):
+		for role in roles:
 			print("rank:",champ.rank)
 			info = ast.literal_eval(champ.info)
-			champion.append(info["name"])
-			champ_pr.append(get_percent(champ.plays, 1200))
-			champ_rr.append(get_percent(roles[role]["count"], champ.plays))
+			champion.append(info["name"] + "-" + role)
+			champ_pr.append(get_percent(champ.plays, 10000))
+			champ_rating.append(round(roles[role]["rating"]/roles[role]["plays"], 2))
 			champ_wr.append(get_percent(roles[role]["wins"], champ.plays))
-			champ_br.append(get_percent(champ.bans, 1200))
-	line_chart.x_labels = map(str, champion)
-	line_chart.add("Wirate", champ_wr)
-	line_chart.add("Pickrate", champ_pr)
-	line_chart.add("Percent role pick", champ_rr)
-	line_chart.add("Banrate", champ_br)
+			champ_br.append(get_percent(champ.bans, 10000))
+	"""
+	top_10_players = []
+	top_10_id = []
+	top_10_players_rating = []
+	top_10_kda = []
+	top_10_wins = []
+	for player in player_data:
+		if(len(top_10_players) < 10):
+			top_10_wins.append(player.wins)
+			top_10_kda.append(player.kda)
+			top_10_players.append(player.name)
+			top_10_id.append(player.accountId)
+			top_10_players_rating.append(player.rating)
+	print(top_10_id)
+	line_chart.x_labels = map(str, top_10_players)
+	line_chart.add("Rating", top_10_players_rating)
+	line_chart.add("kda", top_10_kda)
+	line_chart.add("wins", top_10_wins)
+	#line_chart.add("Wirate", champ_wr)
+	#line_chart.add("Pickrate", champ_pr)
+	#line_chart.add("Banrate", champ_br)
 	line_chart = line_chart.render_data_uri()
-	print("Number of champions in db: ", Champions.select().count())
+	#print("Number of champions in db: ", Champions.select().count())
+	print("Number of players recorded from 10k matches, ", Summoners.select().count())
 	"""
 	line_chart.x_labels = map(str, champion)
 	line_chart.add("Laning against", champ_wr)
 	line_chart.add("Pickrate against", champ_pr)
 	line_chart = line_chart.render_data_uri()
+	"""
 	#return render_template("test.html", data=data, converter=convert_to_dict, get_kda=get_kda, rem_decimals=rem_decimals)
 	return render_template("test.html", wr_chart=line_chart)
 	

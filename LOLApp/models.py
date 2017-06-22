@@ -13,7 +13,7 @@ class Champions(BaseModel):
 	bans = IntegerField()
 	roles = TextField()
 	kda = TextField()
-	laning = FloatField()
+	rating = FloatField()
 	players = TextField()
 	info = TextField()
 	region = CharField()
@@ -35,8 +35,12 @@ class Summoners(BaseModel):
 	loses = IntegerField()
 	behavior = TextField()
 
+	class Meta:
+		order_by = ('rating',)
+
 class GamesVisited(BaseModel):
 	matchId = IntegerField(unique=True)
+	region = CharField()
 
 def initialize_db():
 	database.connect()

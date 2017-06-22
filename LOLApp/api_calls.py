@@ -26,9 +26,9 @@ class APICalls:
 			params=args 
 				)
 		headers = response.headers
-		if("X-App-Rate-Limit-Count" in headers and int(headers["X-App-Rate-Limit-Count"][0:1]) >= 5):
+		if("X-App-Rate-Limit-Count" in headers and int(headers["X-App-Rate-Limit-Count"][0:1]) >= 6):
 			print("rate_limit: ", headers["X-App-Rate-Limit-Count"][0:1])
-			time.sleep(1.5)
+			time.sleep(1.6)
 		if(response.status_code != 200):
 			print("Response code: ", response.status_code)
 			print("Response headers: ", response.headers)
@@ -41,6 +41,8 @@ class APICalls:
 			if(response.status_code != 404):
 				time.sleep(.5)
 				return self._request(api_ref)
+			else:
+				return None
 		else:
 			#print(response.status_code)
 			return response.json()
