@@ -5,55 +5,189 @@
 {% endblock %}
 
 {% block body %}
-    <div class="container" id="landing">
-        <div id="title">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <ul class=flashes>
-                    {% for message in messages %}
-                      <li><h1 id="invalidName">{{ message }}</h1></li>
-                    {% endfor %}
-                    </ul>
+    <body background="/static/imgs/background.jpg">
+        <div class="container">
+            <div id="landing">
+                <div id="title">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for message in messages %}
+                              <li><h1 id="invalidName">{{ message }}</h1></li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
+                    <div class="col">
+                        <div class="col">
+                            <h1 style="color:white">Scryer's Analytics</h1>
+                        </div>
+                        <div class="col">
+                            <img src="/static/imgs/orb.png">
+                        </div>
+                    </div>
+                </div>
+                <form id="search-form" action="{{ url_for('get_data') }}" method="POST">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="name" maxlength="16" id="main-search" list="champs-datalist" size="16" placeholder="Summoner or Champ name..." autocomplete="off">
+                        <datalist id="champs-datalist"></datalist>
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+                        </span>
+                    </div>
+                    <br/>
+                    <div class="col-md-12">
+                        <div class="btn-group" data-toggle="buttons">
+                          <label class="btn btn-primary active">
+                            <input type="radio" name="region" id="option1" autocomplete="off" value="NA" checked>NA
+                          </label>
+                          <label class="btn btn-primary">
+                            <input type="radio" name="region" id="option2" autocomplete="off" value="EUW">EUW
+                          </label>
+                          <label class="btn btn-primary">
+                            <input type="radio" name="region" id="option2" autocomplete="off" value="EUNE">EUNE
+                          </label>
+                          <label class="btn btn-primary">
+                            <input type="radio" name="region" id="option3" autocomplete="off" value="KR">KR
+                          </label>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="form-group row">
+                        <label class="col-xs-6 col-md-4">Champion</label>
+                        <div class="col-xs-12 col-sm-6 col-md-8">
+                            <input name="name" class="form-control" id="champName" maxlength="16" size="16" type="text"/>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-xs-6 col-md-4 col-form-label">Tier</label>
+                        <div class="col-xs-12 col-sm-6 col-md-8">
+                            <select id="rankTier" name="rankTier" class="form-control">
+                                <option value="all">All</option>
+                                <option value="diaUp">Diamond+</option>
+                                <option value="plat">Plat</option>
+                                <option value="gold">Gold</option>
+                                <option value="silver">Silver</option>
+                                <option value="bronze">Bronze</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-xs-6 col-md-4 col-form-label">Region</label>
+                        <div class="col-xs-12 col-sm-6 col-md-8">
+                            <select id="region" name="region" class="form-control">
+                                <option value="NA">North America</option>
+                                <option value="EUW">Europe West</option>
+                                <option value="EUN">Europe Nordic East</option>
+                                <option value="KR">Korea</option>
+                            </select>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="mx-auto text-center">
+                        <input type="submit" class="btn btn-lg btn-block btn-primary" id="search" value="GO"/>
+                    </div>
+                    -->
+                </form>
+            </div>
+            <div class="row" id="opening-tables">
+                {% if best_champs %}
+                    <div class="col table-wrapper" style="border-right: 1.5px solid black;">
+                        <table class="table table-hover">
+                          <caption class="table-title">Best performing Champions</caption>
+                          <thead>
+                            <tr>
+                              <th>Role</th>
+                              <th>Champ</th>
+                              <th>Rating</th>
+                              <th>Winrate</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for champ,stats in best_champs.items() %}
+                                <tr>
+                                    <td>{{ stats["role"] }}</td>
+                                    <td>{{ stats["name"] }}</td>
+                                    {% if stats["rating"] > 0.8 %}
+                                        <td class="good">{{ stats["rating"] }}</td>
+                                    {% else %}
+                                        <td class="bad">{{ stats["rating"] }}</td>
+                                    {% endif %}
+                                    {% if stats["wr"] >= 50 %}
+                                        <td class="good">{{ stats["wr"] }}</td>
+                                    {% else %}
+                                        <td class="bad">{{ stats["wr"] }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
                 {% endif %}
-            {% endwith %}
-            <h1>Scryer's Analytics</h1>
+                {% if best_players %}
+                    <div class="col table-wrapper" style="border-right: 1.5px solid black;">
+                        <table class="table table-hover">
+                          <caption class="table-title">Best performing players</caption>
+                          <thead>
+                            <tr>
+                              <th>Summoner</th>
+                              <th>Rank</th>
+                              <th>Rating</th>
+                              <th>Winrate</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for player in best_players %}
+                                <tr>
+                                  <td>{{ player.name }}</td>
+                                  <td>{{ player.currRank }}</td>
+                                  <td>2</td>
+                                  <td>50%</td>
+                                </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                {% if best_offmeta_champs %}
+                    <div class="col table-wrapper">
+                        <table class="table table-hover">
+                          <caption class="table-title">Best off-meta Picks</caption>
+                          <thead>
+                            <tr>
+                              <th>Role</th>
+                              <th>Champ</th>
+                              <th>Rating</th>
+                              <th>Winrate</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for champ,stats in best_offmeta_champs.items() %}
+                                <tr>
+                                    <td>{{ stats["role"] }}</td>
+                                    <td>{{ stats["name"] }}</td>
+                                    {% if stats["rating"] > 0.8 %}
+                                        <td class="good">{{ stats["rating"] }}</td>
+                                    {% else %}
+                                        <td class="bad">{{ stats["rating"] }}</td>
+                                    {% endif %}
+                                    {% if stats["wr"] >= 50 %}
+                                        <td class="good">{{ stats["wr"] }}</td>
+                                    {% else %}
+                                        <td class="bad">{{ stats["wr"] }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-        <form id="search-form" action="{{ url_for('get_data') }}" method="POST">
-            <div class="form-group row">
-                <label class="col-xs-6 col-md-4">Champion</label>
-                <div class="col-xs-12 col-sm-6 col-md-8">
-                    <input name="name" class="form-control" id="champName" maxlength="16" size="16" type="text"/>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-xs-6 col-md-4 col-form-label">Tier</label>
-                <div class="col-xs-12 col-sm-6 col-md-8">
-                    <select id="rankTier" name="rankTier" class="form-control">
-                        <option value="all">All</option>
-                        <option value="diaUp">Diamond+</option>
-                        <option value="plat">Plat</option>
-                        <option value="gold">Gold</option>
-                        <option value="silver">Silver</option>
-                        <option value="bronze">Bronze</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-xs-6 col-md-4 col-form-label">Region</label>
-                <div class="col-xs-12 col-sm-6 col-md-8">
-                    <select id="region" name="region" class="form-control">
-                        <option value="NA">North America</option>
-                        <option value="EUW">Europe West</option>
-                        <option value="EUN">Europe Nordic East</option>
-                        <option value="KR">Korea</option>
-                    </select>
-                </div>
-            </div>
-            <br/>
-            <div class="mx-auto text-center">
-                <input type="submit" class="btn btn-lg btn-block btn-primary" id="search" value="GO"/>
-            </div>
-        </form>
-    </div>
-
+        <footer class="footer">
+          <div class="container">
+            <p class="text-muted" style="font-size:10px">Scryer's Analytics isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.</p>
+          </div>
+        </footer>
+    <body>
 {% endblock %}

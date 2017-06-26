@@ -1,4 +1,4 @@
-from APIConstants import *
+from .APIConstants import *
 #from config import *
 import requests, time, urllib, json
 #from log import logger
@@ -7,7 +7,7 @@ class APICalls:
 	def __init__(self, region="NA"):
 		self.api_key = API_KEY
 		self.platform = PLATFORMS[region]
-		self.curr_cdn_ver = self.get_latest_cdn_ver()
+		#self.curr_cdn_ver = self.get_latest_cdn_ver()
 		#logging.basicConfig(filename='crawl.log',level=logging.DEBUG)
 		#self.api_callcount = 0
 		#print(self.platform)

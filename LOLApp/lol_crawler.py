@@ -10,22 +10,25 @@ class LolCrawler:
 		self.api_obj = APICalls(region)
 		self.region = region
 		initialize_db()
-		self.items_info = self.get_items_data()
-		self.champs_info = self.get_champs_data()
-		self.keystones_info = self.get_keystones_data()
-		self.spells_info = self.get_summ_spells_data()
-		self.runes_info = self.get_runes_data()
 		self.error_log = open("crawl_error_log.txt", "w")
 		#self.items_data = self.get_all_items_data()["data"]
 		#logging.basicConfig(filename='crawl.log',level=logging.DEBUG)
 
-	def get_champ_stats(self, desired_rank="diamondPlus", num_matches=1000, reset=True):
+	def get_champ_stats(self, desired_rank="diamondPlus", num_matches=1000, reset=True, delete_static_data=True):
 		start = time.time()
 		self.coords = {"TOP":{"x":range(500,4600),"y":range(9500,14500)},"MIDDLE":{"x":range(5000,9000),"y":range(6000,9500)},
 						"BOT":{"x":range(10000,14400),"y":range(600,4500)}, "JUNGLE":{"x":range(-120,14870),"y":range(-120,14980)}}
 		if(reset):
 			self.clear_db()
-		self.print_data("diamondPlus")
+		if(delete_static_data):
+			Champion.delete().where(Champion.champId != None).execute()
+			Item.delete().where(Item.itemId != None).execute()
+		self.items_info = self.get_items_data()
+		self.champs_info = self.get_champs_data()
+		self.keystones_info = self.get_keystones_data()
+		self.spells_info = self.get_summ_spells_data()
+		self.runes_info = self.get_runes_data()
+		#self.print_data("diamondPlus")
 		#dictionary with key being champion names and value being object containing playrate, winrate, best builds, for each league
 		self.players_visited = {}
 		self.matches_visited_list = []
@@ -39,89 +42,121 @@ class LolCrawler:
 						"platinum":{"rank_tiers":["PLATINUM"],"champions":{}}
 						}
 		if(desired_rank == "diamondPlus"):
-			data = self.api_obj.get_master_players()
-			account_id = self.api_obj.get_summoner_by_summid(data["entries"][0]["playerOrTeamId"])["accountId"]
-			rank = "MASTER"
-		elif(desired_rank == "gold"):
-			account_id = 47060566
-			rank = desired_rank.upper()		
-		self.crawl_history(account_id, rank, desired_rank, num_matches, "AllIDoisFeed")
+			masters_data = self.api_obj.get_master_players()["entries"][0]
+			starting_acc = self.api_obj.get_summoner_by_summid(masters_data["playerOrTeamId"])["accountId"]
+			starting_rank = "MASTER"
+			starting_name = masters_data["playerOrTeamName"]
+		else:
+			starting_rank = desired_rank.upper()
+			if(desired_rank == "gold"):
+				starting_acc = 47060566
+				starting_name = "AllIDoisFeed"
+			elif(desired_rank == "platinum"):
+				starting_acc = 47312751
+				starting_name = "SKT Marin"
+			elif(desired_rank == "silver"):
+				starting_acc = 34976403
+				starting_name = "Balut Is Life"
+			elif(desired_rank == "bronze"):
+				starting_acc = 234997382
+				starting_name = "Glb12"
+			else:
+				return "Invalid Parameters"
+		self.crawl_history(starting_acc, starting_rank, desired_rank, num_matches, starting_name)
 
-		for league in self.leagues:
-			self.add_champs_db(league)
+		self.add_champ_stats_db()
 		self.add_gamed_visited_db()
 		self.add_players_db()
 		end = time.time()
 		#need to figure out why item with an id 0 keeps popping up, neeed to get arrange items
 		#also need to figure out why starting and early game items not being added
-		self.error_log.close()
 		print("Searching ", len(self.matches_visited_list), " matches took: ", end - start, " seconds.")
 		print("Number of remakes: ", len(self.remakes))
 		database.close()
 		#return champ_info_list, self.matches_visited
 
+	def close_err_log(self):
+		self.error_log.close()
+
 	def clear_db(self):
 		GamesVisited.delete().where(GamesVisited.matchId != None).execute()
-		Champions.delete().where(Champions.champId != None).execute()  # remove the rows
-		Summoners.delete().where(Summoners.accountId != None).execute()
+		ChampStats.delete().where(ChampStats.champId != None).execute()  # remove the rows
+		Player.delete().where(Player.accountId != None).execute()
 
 	def add_players_db(self):
 		for player,data in self.players_visited.items():
-			kda_dict = data.stats["kda"]
-			if(kda_dict is None):
-				kda = 0
-			elif(kda_dict["deaths"] == 0):
-				kda = 99.0
-			else:
-				kda = kda_dict["kills"]+kda_dict["assists"]/kda_dict["deaths"]
 			num_matches = data.wins+data.loses
-			if(num_matches >= 10):
-				Summoners.create(
-					accountId = data.info["accountId"],
-					name = data.info["name"],
-					region = data.info["region"],
-					currentRank = data.info["currentRank"],
+			if(num_matches >= 3):
+				Player.create(
+					accountId = data.accountId,
+					name = data.name,
+					summId = data.summonerId,
+					region = data.region,
 					champions = data.champs,
-					kda = kda,
-					rating = round(data.rating/(data.wins+data.loses),2),
-					stats = data.stats,
+					kda = data.kda,
+					kills = data.kills,
+					deaths = data.deaths,
+					assists = data.assists,
 					wins = data.wins,
 					loses = data.loses,
-					behavior = data.behavior
+					oaRating = data.oa_rating,
+					tierRating = data.tier_rating,
+					kp = data.kp,
+					objScore = data.obj_sc,
+					visScore = data.vis_sc,
+					goldShare = data.gold_share,
+					wpm = data.wpm,
+					dpm = data.dpm,
+					dmgShare = data.damage_share,
+					playstyle = data.playstyle
 				)
 
-	def add_champs_db(self, rank_tiers):
-		champs = self.leagues[rank_tiers]["champions"]
-		for champ in champs:
-			#print("looking at champ: ", champ)
-			champs[champ].most_common_roles(champs[champ].roles, 2)
-			champs[champ].get_best_build()
-			champs[champ].get_most_played_players()
-			champs[champ].get_skill_order()
-			champs[champ].filter_runes()
-			champs[champ].get_best_players()
-			#self.leagues[rank]["champions"][champ].most_common(self.leagues[rank]["champions"][champ].items, 4)
-			print("current champ: ", champ)
-			#print("players: ", self.leagues[rank]["champions"][champ].players)
-			#print('champ: ', champs[champ].champ_id)
-			plays = champs[champ].plays
-			if(plays <= 0):
-				plays = 1
-
-			Champions.create(
-				#temp["name"] = self.leagues[rank]["champions"][champ].name
-				champId = champs[champ].champ_id,
-				plays = champs[champ].plays,
-				wins = champs[champ].wins,
-				roles = champs[champ].roles,
-				kda = champs[champ].kda,
-				rating =  round(champs[champ].ov_rating/plays,2),
-				bans = champs[champ].bans,
-				players = champs[champ].players,
-				info = champs[champ].info,
-				region = self.region,
-				rank = rank_tiers,
-			)
+	def add_champ_stats_db(self):
+		for league in self.leagues:
+			champs = self.leagues[league]["champions"]
+			if(len(champs) > 0):
+				for champ in champs:
+					champs[champ].most_common_roles(champs[champ].roles, 2)
+					champs[champ].get_best_players()
+					champs[champ].get_best_build()
+					champs[champ].get_skill_order()
+					if(champs[champ].deaths == 0):
+						oa_kda = champs[champ].kills+champs[champ].assists
+					else:
+						oa_kda = (champs[champ].kills+champs[champ].assists)/champs[champ].deaths
+					for role, stats in champs[champ].roles.items():
+						print(stats["build"])
+						ChampStats.create(
+							champId = champs[champ].champ_id,
+							totalPlays = champs[champ].plays,
+							rolePlays = stats["plays"],
+							role = role,
+							totalWins = champs[champ].wins,
+							roleWins = stats["wins"],
+							bans = champs[champ].bans,
+							kda = oa_kda,
+							kills = champs[champ].kills,
+							deaths = champs[champ].deaths,
+							assists = champs[champ].assists,
+							oaRating = champs[champ].oa_rating,
+							roleRating = stats["oa_role_rating"],
+							spells = stats["spells"],
+							players = champs[champ].players,
+							skillOrder = stats["skill_order"],
+							dpm = stats["damage_dealt"],
+							dtpm = stats["damage_taken"],
+							matchups = stats["matchups"],
+							region = self.region,
+							rankTier = league,
+							runes = stats["runes"],
+							startingItems = stats["build"]["start"],
+							consumeableItems = stats["build"]["consumables"],
+							earlyBehindItems = stats["build"]["consumables"],
+							earlyAheadItems = stats["build"]["consumables"],						
+							coreItems = stats["build"]["core"],
+							offenseItems = stats["build"]["offense"],
+							defenseItems = stats["build"]["defense"]
+						)
 
 	def add_gamed_visited_db(self):
 		visited_for_champ = open("matches_visited.txt", "w")
@@ -139,58 +174,46 @@ class LolCrawler:
 	def print_data(self, rank):
 		"""
 		temp = []
-		for champ in Champions.select().where(Champions.rank == rank):
-			if(champ.champId not in temp):
-				temp.append(champ.champId)
-			else:
-				print("repeated")
-			info = ast.literal_eval(champ.info)
-			print("Region: ", champ.region, " rank: ", champ.rank)
-			print("Champ name: ", info["name"], " bans: ", champ.bans, " plays: ", champ.plays)
-			#print(champ.roles)
-			print(champ.players)
-			if(len(champ.roles) > 0):
-				roles = ast.literal_eval(champ.roles)
-				#print(roles)
-				for role,stats in roles.items():
-					print(role)
-					#print("keystone", stats["keystone"])
-					#print("skill order: ", stats["skill_order"])
-					#print("runes", stats["runes"])
-					
-					for num,skill_slot in stats["skill_order"].items():
-						print("Level: ", num, " skills: ", skill_slot)
-					
-					for stage,items_list in stats["build"].items():
-						print(stage)
-						for item_id,item in items_list.items():
-							if(stage == "late"):
-								print("situation: ", item_id)
-								for situation,item in item.items():
-									print("name: ", item["info"]["name"], " rating: ", item["rating"])
-							else:
-							#print("item? ", item)
-								print("name: ", item["info"]["name"], " uses: ", item["used"], " rating: ", item["rating"])
-			else:
-				print("Insufficient data.")
-			
-			#count = 0
-			if(len(champ.players) > 0):
-				players = ast.literal_eval(champ.players)
-				for player,stats in players.items():
-					print("player: ", player, " stats: ", stats)
-			
-			#print("Number of players who played this champ 2 or less times: ", count)
-			#print("Playrate: ", champ.plays/1000, " Winrate: ", champ.wins/champ.plays, "\n")
-			#print("Players: ", champ.players)
-		print("Number of champions in db: ", Champions.select().where(Champions.rank == rank).count())
-		"""
-		for player in Summoners.select():
-			print(player.name, " - ", player.currentRank, " region: ", player.region)
-			print("rating ", player.rating)
-			print("Champ pool: ", player.champions)
-		print("Number of players: ", Summoners.select().count())
+		lee = ChampStats.get(ChampStats.champId == 64, ChampStats.rankTier == rank)
+		lee_info = Champion.get(Champion.champId == lee.champId) 
+		print(lee_info.name, " role: ", lee.role, " for ranks: ", lee.rankTier)
+		print("Winrate: ", round(lee.totalWins/lee.totalPlays, 2), " overall rating: ", round(lee.oaRating/lee.totalPlays, 2))
 		
+		build = ast.literal_eval(lee.build)
+		jung_core = []
+		ss = []
+		for stage,item in build.items():
+			print(stage)
+			for itemId,stats in item.items():
+				name = stats["info"]["name"]
+				if(itemId in self.items_info["complete"]):
+					for item in self.items_info["complete"][itemId]["from"]:
+						if(item in self.items_info["jung_base"]):
+							jung_core.append(stats)
+						elif(item in self.items_info["ss_base"]):
+							ss.append(stats)
+				print(itemId, " name: ", stats["info"]["name"], " rating: ", stats["rating"], " used: ", stats["used"])
+		for item in multVersions:
+			print(item["info"]["name"], " rating: ", item["m"])
+		#print("build: ", lee.build)
+		"""
+		for champ in ChampStats.select().where(ChampStats.rankTier == rank):
+			champ_info = Champion.get(Champion.champId == champ.champId) 
+			print(champ_info.name, " role: ", champ.role, " for ranks: ", champ.rankTier)
+			print("Winrate: ", round(champ.totalWins/champ.totalPlays, 2), " overall rating: ", round(champ.oaRating/champ.totalPlays, 2))
+			build = ast.literal_eval(champ.build)
+			for stage,item in build.items():
+				print(stage)
+				for itemId,stats in item.items():
+					if(stage == "late"):
+						print(itemId)
+						for item,val in stats.items():
+							name = val["info"]["name"]
+							print(item, " name: ", name, " rating: ", val["rating"], " used: ", val["used"])
+					else:
+						name = stats["info"]["name"]
+						print(itemId, " name: ", name, " rating: ", stats["rating"], " used: ", stats["used"])
+			print(champ.skillOrder)
 
 	def crawl_history(self, acc_id, curr_rank, desired_rank, num_matches, name=None, season = 8):
 		print("name: ", name, " account id: ", acc_id)
@@ -204,6 +227,8 @@ class LolCrawler:
 				if(cur_count < num_matches):
 					game_id = match["gameId"]
 					if(game_id not in self.matches_visited_list):
+						self.matches_visited.append({"matchId":game_id, "region":self.region})
+						self.matches_visited_list.append(game_id)
 						print("game id :", game_id)
 						match_details = self.get_match_details(game_id)
 						#1496197986 represents latest paatch date
@@ -216,38 +241,38 @@ class LolCrawler:
 								par = match_details["participants"]
 								self.get_team_stats(par)
 								self.process_player_pairs(match_details, match_timeline, par, match_details["participantIdentities"], curr_rank)
-							self.matches_visited.append({"matchId":game_id, "region":self.region})
-							self.matches_visited_list.append(game_id)
 						else:
 							break
 				else:
 					break
 			if(cur_count < num_matches):
-				for player in match_details["participantIdentities"]:
-					acc_id = player["player"]["currentAccountId"]
-					if(acc_id not in self.players_visited):
-						rank = self.get_rank(player["player"]["summonerId"])
-					else:
-						rank = self.players_visited[acc_id].info["currentRank"]
-					if(rank in self.leagues[desired_rank]["rank_tiers"]):
-						self.crawl_history(acc_id, rank, desired_rank, num_matches, player["player"]["summonerName"], season)
+				try:
+					for player in match_details["participantIdentities"]:
+						acc_id = player["player"]["currentAccountId"]
+						if(acc_id not in self.players_visited):
+							rank = self.get_rank(player["player"]["summonerId"])
+						else:
+							rank = self.players_visited[acc_id].currentRank
+						if(rank in self.leagues[desired_rank]["rank_tiers"]):
+							self.crawl_history(acc_id, rank, desired_rank, num_matches, player["player"]["summonerName"], season)
+				except:
+					UnboundLocalError
 
 	def get_rank(self, summ_id):
-		rank = None
-		try:
-			rank = self.api_obj.get_league(summ_id)[0]["tier"]
-		except:
-			IndexError, KeyError
-			self.error_log.write("fn: check_rank | input: " + str(summ_id) + "\n")
-		return rank
+		rank = self.api_obj.get_league(summ_id)
+		if(len(rank) > 0):
+			return rank[0]["tier"]
+		return "UNRANKED"
 
-	def add_player(self, acc_id, name, summ_id):
+	def add_player(self, acc_id, name, summ_id, curr_player_rank):
 		if(acc_id not in self.players_visited):
 			if(type(summ_id) is int):
 				rank = self.get_rank(summ_id)
+				if(rank is "UNRANKED"):
+					rank = curr_player_rank
 			else:
 				rank = summ_id
-			new_player = PlayerStats(acc_id, name, self.region, rank)
+			new_player = PlayerStats(acc_id, summ_id, name, self.region)
 			self.players_visited[acc_id] = new_player
 
 	def get_tier_k(self, player_rank):
@@ -264,9 +289,10 @@ class LolCrawler:
 		for i in range(0, 5):
 			p1 = par[i]
 			p1_acc_id = par_idts[i]["player"]["currentAccountId"]
+			print("p1 id: ", p1_acc_id)
 			if(p1_acc_id not in self.players_visited):
-				self.add_player(p1_acc_id, par_idts[i]["player"]["summonerName"], par_idts[i]["player"]["summonerId"])
-			p1_rank = self.players_visited[p1_acc_id].info["currentRank"]
+				self.add_player(p1_acc_id, par_idts[i]["player"]["summonerName"], par_idts[i]["player"]["summonerId"], curr_rank)
+			p1_rank = self.players_visited[p1_acc_id].currentRank
 			if(p1_rank is None):
 				p1_rank = curr_rank
 			p2 = None
@@ -282,11 +308,12 @@ class LolCrawler:
 					if(p2_role == p1_role):
 						p2_acc_id = par_idts[j]["player"]["currentAccountId"]
 						if(p2_acc_id not in self.players_visited):
-							self.add_player(p2_acc_id, par_idts[j]["player"]["summonerName"], par_idts[j]["player"]["summonerId"])
-						p2_rank = self.players_visited[p2_acc_id].info["currentRank"]
+							self.add_player(p2_acc_id, par_idts[j]["player"]["summonerName"], par_idts[j]["player"]["summonerId"], curr_rank)
+						p2_rank = self.players_visited[p2_acc_id].currentRank
 						if(p2_rank is None):
 							p2_rank = curr_rank
 						p2 = par[j]
+						print("p2 acc id: ", p2_acc_id)
 						picked_players.append(j) 
 						break
 			if(p2 is not None):
@@ -357,7 +384,7 @@ class LolCrawler:
 		print("champ: ", champ)
 		print("tier rank: ", desired_rank)
 		if(champ not in self.leagues[desired_rank]["champions"]):
-			new_champ = ChampionStats(champ, self.champs_info[champ])
+			new_champ = ChampionStats(champ)
 			self.leagues[desired_rank]["champions"][champ] = new_champ
 
 	#perhaps split this section, because "add_champs_data" does not fully describe what it does
@@ -374,49 +401,44 @@ class LolCrawler:
 			acc_id = player_data["currentAccountId"]
 			mult = self.get_multiplier(player[1])
 			win = 1 if player[0]["stats"]["win"] else 0
-			player_perf = self.get_player_performance(match_timeline, player[0], role, team, game_dur) * mult
+			player_perf = self.get_player_performance(match_timeline, player[0], acc_id, role, team, game_dur)
 			print("performance: ", player_perf)
 			rating = (player_perf*.7) + (laning_perf*.3)
-			print("rating: ", rating)
-			self.leagues[rank_tiers[team]]["champions"][champ_id].add_player(acc_id, win, self.get_kda(player[0]), rating)
-			self.add_players_data(player[0], acc_id, win, player_perf, game_dur)
+			oa_rating = rating*mult
+			print("overall rating: ", oa_rating, " vs true rating ", rating)
+			self.leagues[rank_tiers[team]]["champions"][champ_id].add_player(acc_id, win, self.get_kda(player[0]), oa_rating)
+			self.add_players_data(player[0], acc_id, win, oa_rating, rating, game_dur)
 			self.players_visited[acc_id].add_champ(champ_id, win, player_perf)
 
 			champ_obj = self.leagues[rank_tiers[team]]["champions"][champ_id]
 			champ_obj.plays += 1
-			self.add_champ_stats(champ_obj, player[0], win, role, self.get_kda(player[0]), laning_perf, rating)
-			self.add_build(role, match_timeline, player[0], rank_tiers[team], laning_perf, rating)
+			self.add_champ_stats(champ_obj, player[0], win, role, self.get_kda(player[0]), laning_perf, oa_rating, game_dur)
+			self.add_build(role, match_timeline, player[0], rank_tiers[team], laning_perf, oa_rating)
 			self.add_keystone(champ_obj, player[0], role, win, laning_perf)
 			self.add_spells(champ_obj, player[0], role, win, laning_perf)
 			self.add_runes(champ_obj, player[0], role, win, laning_perf)
-			self.leagues[rank_tiers[team]]["champions"][champ_id].add_skill_order(role, match_timeline, par_id, win)
+			self.leagues[rank_tiers[team]]["champions"][champ_id].add_skill_order(role, match_timeline, par_id, win, oa_rating)
 
 	def get_multiplier(self, rank):
 		if(rank == "CHALLENGER"):
-			return 1.75
+			return 1.7
 		elif(rank == "MASTER"):
 			return 1.6
 		elif(rank == "DIAMOND"):
-			return 1.5
+			return 1.4
 		elif(rank == "PLATINUM"):
-			return 1.3
+			return 1.25
 		elif(rank == "GOLD" or "UNRANKED"):
 			return 1.1
 		else:
-			return .8
+			return 1
 
-	def add_players_data(self, player, acc_id, win, rating, duration):
+	def add_players_data(self, player, acc_id, win, oa_rating, t_rating, duration):
 		cur_player = self.players_visited[acc_id]
-		cur_player.add_kda(self.get_kda(player))
-		cur_player.add_rating(rating)
-		cur_player.add_stat("objectiveScore", self.get_obj_sc(player, duration))
-		cur_player.add_stat("visionScore", self.get_vis_sc(player, duration))
-		cur_player.add_gold(player["stats"]["goldEarned"])
-		cur_player.add_damage_dealt(player["stats"]["totalDamageDealtToChampions"])
-		if(win == 1):
-			self.players_visited[acc_id].wins += 1
-		else:
-			self.players_visited[acc_id].loses += 1
+		cur_player.add_ratings(oa_rating, t_rating)
+		cur_player.wpm += player["stats"]["wardsPlaced"]/duration
+		cur_player.dpm += player["stats"]["totalDamageDealtToChampions"]/duration
+		cur_player.add_wins_loses(win)
 
 	#connect this with player perofrmance
 	def get_obj_sc(self, player, game_dur):
@@ -430,17 +452,16 @@ class LolCrawler:
 			points += .5
 		elif("firstInhibitorKill" in stats and stats["firstInhibitorKill"]):
 			points += 1
-		points += (stats["damageDealtToObjectives"]/game_dur)**.15
+		points += (stats["damageDealtToObjectives"]/game_dur)**.2
 		return points
 
 	def get_vis_sc(self, player, game_dur):
-		#note riot's vision score is just (wards placed*2)+(wards killed)+(vision ward bought)
-		points = 0
+		#using riot's own visonscore which is calculated based on how much vision you provided/denied
 		try:
-			points = player["stats"]["visionScore"]/game_dur
+			return player["stats"]["visionScore"]/game_dur
 		except:
 			KeyError
-		return points
+		return 0
 
 	def add_banned_champs(self, match, desired_rank):
 		banned_champs = []
@@ -450,8 +471,10 @@ class LolCrawler:
 				champ_id = ban["championId"]
 				if(champ_id not in banned_champs):
 					if(champ_id in self.champs_info):
+						print("id: ", champ_id)
 						if(champ_id not in curr_section["champions"]):
-							curr_section["champions"][champ_id] = ChampionStats(champ_id, self.champs_info[champ_id])			
+							curr_section["champions"][champ_id] = ChampionStats(champ_id)	
+						print("cur champ plays: ", curr_section["champions"][champ_id].champ_id)		
 						curr_section["champions"][champ_id].bans += 1
 						banned_champs.append(champ_id)
 
@@ -473,43 +496,68 @@ class LolCrawler:
 				"deaths": player["stats"]["deaths"],
 				"assists": player["stats"]["assists"]}
 
-	def get_player_performance(self, timeline, player, role, team, duration):
+	def get_player_performance(self, timeline, player, acc_id, role, team, duration):
 		teams = {"team1": [self.team1_dmg, self.team1_gold, self.team1_kills], 
 				"team2":[self.team2_dmg, self.team2_gold, self.team2_kills]}
 		score = 0
-		deaths = player["stats"]["deaths"]
+		kda_dict = self.get_kda(player)
+		ka = kda_dict["kills"]+kda_dict["assists"]
+		deaths = kda_dict["deaths"]
 		if(deaths == 0):
 			deaths = 1
-		kills_assists = player["stats"]["kills"] + player["stats"]["assists"]
-		kda = kills_assists/deaths  
-		if(kda >= 7):
+		kda = ka/deaths  
+		if(kda >= 5):
 			score += 2
-		elif(kda >= 4):
-			score += 1.5
+		elif(kda >= 3):
+			score += 1.6
 		elif(kda >= 1.5):
-			score += 1
-		score += self.get_team_contribution(player, kills_assists, role, teams[team][0], teams[team][1], teams[team][2])
-		score += self.get_obj_sc(player, duration) + self.get_vis_sc(player, duration)
+			score += 1.3
+		obj_sc = self.get_obj_sc(player, duration)
+		vis_sc = self.get_vis_sc(player, duration)
+		score += self.get_team_contribution(player, acc_id, ka, role, teams[team][0], teams[team][1], teams[team][2])
+	
+		player = self.players_visited[acc_id]
+		player.add_obj_score(obj_sc)
+		player.add_vis_score(vis_sc)
+		player.add_kills_stats(kda_dict, kda)
+		score += obj_sc + vis_sc
 		#print("score: ", score)
 		return (score/9.5)
 
-	def get_team_contribution(self, player, ka, role, team_dmg, team_gold, team_kills):
+	def get_team_contribution(self, player, acc_id, ka, role, team_dmg, team_gold, team_kills):
 		score = 0
 		if(role == "BOT_SUPPORT"):
-			expected_share = .1 
-		elif(role == "BOT_CARRY" or "MIDDLE"):
+			expected_share = .15
+		elif(role == "BOT_CARRY"):
 			expected_share = .25
 		else:
 			expected_share = .2
+		kill_par = self.get_player_share(ka, team_kills)
+		if(kill_par >= .7):
+			score += 2
+		elif(kill_par >= .6):
+			score += 1.5
+		elif(kill_par >= .4):
+			score ++ 1
+		dmg_share = self.get_player_share(player["stats"]["totalDamageDealtToChampions"], team_dmg, expected_share)
+		gold_share = self.get_player_share(player["stats"]["goldEarned"], team_gold, expected_share)
+		score += dmg_share[0] + gold_share[0]
 
-		if(team_kills > 0):
-			if(ka/team_kills >= .5):
-				score += 1
-			elif(ka/team_kills >= .8):
-				score += 2
-		score += 1 if player["stats"]["totalDamageDealtToChampions"]/team_dmg >= expected_share else 0
-		score += 1 if player["stats"]["goldEarned"]/team_gold  >= expected_share else 0
+		self.players_visited[acc_id].kp += kill_par
+		self.players_visited[acc_id].add_damage_share(dmg_share[1])
+		self.players_visited[acc_id].add_gold_share(gold_share[1])
 		return score
+
+	def get_player_share(self, player_stat, team_stat, exp_cont = None):
+		if(team_stat > 0):
+			player_cont = player_stat/team_stat
+			if(exp_cont is None):
+				return player_cont
+			if(player_cont > exp_cont):
+				return 2,player_cont
+			elif(player_cont >= (exp_cont*.9)):
+				return 1,player_cont
+		return 0,0
 
 	def add_keystone(self, champ, player_details, role, win, perf):
 		try:
@@ -540,6 +588,7 @@ class LolCrawler:
 			"""
 			rune_types = {0:"red", 1:"blue", 2:"yellow", 3:"black"}
 			index = 0
+			similar = []
 			if(len(runes) == 4):
 				for rune in runes:
 					if(rune["runeId"] in self.runes_info):
@@ -553,26 +602,39 @@ class LolCrawler:
 		par_id = player_details["participantId"]
 		#print("laning: ", laning)
 		champ = self.leagues[desired_rank]["champions"][champ_id]
-		for frame in timeline[1:15]:
+		for idx,frame in enumerate(timeline[1:]):
 			for event in frame["events"]:
 				if("participantId" in event and event["participantId"] == par_id and event["type"] == "ITEM_PURCHASED"):
 					#print("item: ", self.items_data[str(event["itemId"])])
 					item = event["itemId"]
 					#print("item id: ", item, "starting items: ", self.items["start"])
-					if(event["timestamp"] < 20000 and item in self.items_info["start"]):
-						champ.add_item(item, self.items_info["start"][item], role, "start", rating)
+					if(item in self.items_info["consumables"]):
+						champ.add_item(item, self.items_info["consumables"][item], role, "consumables", rating)
 					else:
-						if(laning >= 0):
-							status = "early_ahead"
+						if(event["timestamp"] < 20000):
+							if(item in self.items_info["start"]):
+								champ.add_item(item, self.items_info["start"][item], role, "start", rating)
 						else:
-							status = "early_behind"
-						#print("status: ", status, " item: ", self.items_raw_data[item]["name"])
-						if(self.check_item(champ, item, role, status)):
-							if("Boots" in self.items_info["complete"][item]["tags"]):
-								champ.add_item(item, self.items_info["complete"][item], role, "boots", rating)
-							else:
-								champ.add_item(item, self.items_info["complete"][item], role, status, rating)
-		champ.add_late(player_details["stats"], role, rating, self.items_info)
+							if(item in self.items_info["complete"]):
+								if("Boots" in self.items_info["complete"][item]["tags"]):
+									champ.add_item(item, self.items_info["complete"][item], role, "boots", rating)
+								elif(item in self.items_info and "Jungle" in self.items_info[item]["tags"]):
+									champ.add_item(item, self.items_info["complete"][item], role, "jung_items", rating)
+								elif(item in self.items_info and "Vision" in self.items_info[item]["tags"]):
+									champ.add_item(item, self.items_info["complete"][item], role, "vis_items", rating)
+								elif("CriticalStrike" in self.items_info["complete"][item]["tags"] and "AttackSpeed" in self.items_info["complete"][item]["tags"]):
+									champ.add_item(item, self.items_info["complete"][item], role, "attk_speed_items", rating)
+								else:
+									if(idx <= 13):
+										if(laning >= 0):
+											status = "early_ahead"
+										else:
+											status = "early_behind"
+										if(item not in champ.roles[role]["build"]["start"]):
+											champ.add_item(item, self.items_info["complete"][item], role, status, rating)
+									else:
+										if(self.check_item(champ, item, role, "late")):
+											champ.add_item(item, self.items_info["complete"][item], role, "late", rating)						
 
 	def check_item(self, champ, item_id, role, stage):
 		build = champ.roles[role]["build"]
@@ -587,12 +649,12 @@ class LolCrawler:
 				return item_id in self.items_info["complete"]
 			return False
 
-	def add_champ_stats(self, champ, player, win, role, kda, laning, rating):
+	def add_champ_stats(self, champ, player, win, role, kda, laning, rating, dur):
 		champ.add_kda(kda)
-		champ.ov_rating += rating
+		champ.oa_rating += rating
 		champ.wins += win
 		stats = player["stats"]
-		champ.add_role(role, win, kda, stats["totalDamageDealtToChampions"], stats["totalDamageTaken"], laning, rating)
+		champ.add_role(role, win, kda, stats["totalDamageDealtToChampions"]/dur, stats["totalDamageTaken"]/dur, laning, rating)
 
 	def analyze_matchup(self, timeline, p1, p2, role, rank_tiers):
 		#print("des rank: ", desired_rank)
@@ -622,12 +684,14 @@ class LolCrawler:
 				for time in p1["timeline"]["csDiffPerMinDeltas"]:
 					if("30" not in time and "20" not in time):
 						if(p1["timeline"]["csDiffPerMinDeltas"][time] >= 2):
-							points += 1.5
+							points += 2
 						elif(p1["timeline"]["csDiffPerMinDeltas"][time] > 1):
 							points += 1
 		else:
 			enemy_camps_dif = p1["stats"]["neutralMinionsKilledEnemyJungle"]-p2["stats"]["neutralMinionsKilledEnemyJungle"]
 			team_camps_dif = p1["stats"]["neutralMinionsKilledTeamJungle"]-p2["stats"]["neutralMinionsKilledTeamJungle"]
+			if(enemy_camps_dif >= 7 and team_camps_dif >= 7):
+				points += .5
 			if(enemy_camps_dif >= 10):
 				points += 1
 			if(team_camps_dif >= 10):
@@ -636,7 +700,7 @@ class LolCrawler:
 			for time in p1["timeline"]["xpDiffPerMinDeltas"]:
 				if("30" not in time and "20" not in time):
 					if(p1["timeline"]["xpDiffPerMinDeltas"][time] >= 100):
-						points += 1.5
+						points += 2
 					elif(p1["timeline"]["xpDiffPerMinDeltas"][time] >= 50):
 						points += 1
 		return points
@@ -684,22 +748,52 @@ class LolCrawler:
 	def get_items_data(self):
 		#add item tags/descriptions as well, like whether it's damage item, armor, mr etc.
 		items_raw_data = self.api_obj.get_static_data("items")["data"]
-		temp = {"complete":{}, "trinket":{}, "start":{}}
+		temp = {"complete":{}, "trinket":{}, "start":{}, "consumables":{}}
 		for item,val in items_raw_data.items():
-			item = int(item)
+			item_int = int(item)
 			if("maps" in val and val["maps"]["11"] and "name" in val and val["gold"]["purchasable"]):
+				if("requiredChamp" in val):
+					req = val["requiredChamp"]
+				else:
+					req = None
 				if("tags" not in val):
 					tags = [None]
 				else:
 					tags = val["tags"]
-				if(val["gold"]["total"] <= 500):
-					temp["start"][item] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags}
+				complete = self.check_item_complete(val)
+				#print("Consumable" in tags)
+				if("Consumable" in tags and "consumed" in val):
+					#print("consumable: ", val["name"])
+					temp["consumables"][item_int] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags, "reqChamp":req}
+				elif(val["gold"]["total"] <= 500 or "lane" in tags):
+					print("starting item: ", val["name"])
+					temp["start"][item_int] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags, "reqChamp":req}
 				elif("tags" in val and "Trinket" in val["tags"]):
-					temp["trinket"][item] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags}
-				elif("into" not in val and ("tags" not in val or "Consumable" not in val["tags"])):
-					temp["complete"][item] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags}
-		#print(temp)
+					temp["trinket"][item_int] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags, "reqChamp":req}
+				elif(complete):
+					temp["complete"][item_int] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags, "reqChamp":req, "from":val["from"]}
+				elif("Jungle" in tags or "Sightstone" == val["name"]):
+					for complete_item in val["into"]:
+						print("complete base: ", complete_item)
+						temp[int(complete_item)] = {"name":val["name"], "cost":val["gold"]["total"], "tags":tags, "reqChamp":req}
+				query = Item.select().where(Item.itemId == item_int)
+				if(None in tags):
+					tags = None
+				if(not query.exists()):
+					Item.create(
+						itemId = item_int,
+						name = val["name"],
+						image = val["image"]["full"],
+						cost = val["gold"]["total"],
+						tags = tags,
+						requiredChamp = req,
+						des = val["sanitizedDescription"],
+						complete = complete
+					)
 		return temp
+
+	def check_item_complete(self, info):
+		return "into" not in info and ("tags" not in info or "Consumable" not in info["tags"])
 
 	def get_champs_data(self):
 		champs_data = self.api_obj.get_static_data("champions")["data"]
@@ -710,6 +804,36 @@ class LolCrawler:
 								"enemy_tips":champ["enemytips"], "ally_tips":champ["allytips"],
 								"tags":champ["tags"]
 								}
+			query = Champion.select().where(Champion.champId == champ["id"])
+			if(not query.exists()):
+				Champion.create(
+					champId = champ["id"],
+					name = champ["name"],
+					image = champ["image"]["full"],
+					tags = champ["tags"],
+					abilities = champ["spells"],
+					passive = champ["passive"],
+					enemyTips = champ["enemytips"],
+					allyTips = champ["allytips"],
+					armorPerlevel = champ["stats"]["armorperlevel"],
+					attackDamage = champ["stats"]["attackdamage"],
+					manaPerLvl = champ["stats"]["mpperlevel"],
+					attackSpeed = .625/(1+champ["stats"]["attackspeedoffset"]),
+					mana = champ["stats"]["mp"],
+					armor = champ["stats"]["armor"],
+					hp = champ["stats"]["hp"],
+					hpRegenPerLvl =  champ["stats"]["hpregenperlevel"],
+					attackSpeedPerLvl = champ["stats"]["attackspeedperlevel"],
+					aaRange = champ["stats"]["attackrange"],
+					movementSpeed = champ["stats"]["movespeed"],
+					attackDamagePerLvl = champ["stats"]["attackdamageperlevel"],
+					manaRegenPerLevel = champ["stats"]["mpregenperlevel"],
+					mrPerLvl = champ["stats"]["spellblockperlevel"],
+					manaRegen = champ["stats"]["mpregen"],
+					mr = champ["stats"]["spellblock"],
+					hpRegen = champ["stats"]["hpregen"],
+					hpPerLvl = champ["stats"]["hpperlevel"]
+				)
 		return temp
 
 	def get_keystones_data(self):
@@ -756,8 +880,9 @@ class LolCrawler:
 
 if __name__ == "__main__":
 	crawler = LolCrawler()
-	#crawler.get_champ_stats("gold", 100)
-	crawler.get_champ_stats("gold", 260, False)
-	#crawler.print_data("diamondPlus")
-
-
+	crawler.get_champ_stats("platinum", 500, False, False)
+	#crawler.get_champ_stats("bronze", 200, False)
+	#crawler.print_data("gold")
+	#crawler.get_champ_stats("platinum", 150, False)
+	#crawler.get_champ_stats("gold", 6, False)
+	crawler.close_err_log()

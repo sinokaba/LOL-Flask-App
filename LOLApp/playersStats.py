@@ -1,41 +1,44 @@
 class PlayerStats:
-	def __init__(self, account_id, name, region, rank):
-		self.info = {"accountId":account_id, "name":name, "region":region, "currentRank":rank}
-		self.stats = {"kda":None}
-		self.wins = 0
-		self.loses = 0
-		self.rating = 0
+	def __init__(self, account_id, summ_id, name, region, rank):
+		self.accountId = account_id
+		self.summonerId = summ_id
+		self.name = name
+		self.region = region
+		self.currentRank = rank
+		self.kills = self.deaths = self.assists = self.kda = 0
+		self.wins = self.loses = self.oa_rating = self.tier_rating = 0
+		self.kp = self.obj_sc = self.vis_sc = self.gold_share = 0
+		self.wpm = self.dpm = self.damage_share = 0
 		self.champs = {}
-		self.behavior = {}
+		self.playstyle = {}
 
-	def add_kda(self, kda):
-		if(self.stats["kda"] is None):
-			self.stats["kda"] = {"kills":kda["kills"], "deaths":kda["deaths"], "assists":kda["assists"]}
-		else:
-			self.stats["kda"]["kills"] += kda["kills"]
-			self.stats["kda"]["deaths"] += kda["deaths"]
-			self.stats["kda"]["assists"] += kda["assists"]
+	def add_kills_stats(self, kda_dict, kda):
+		self.kills += kda_dict["kills"]
+		self.deaths += kda_dict["deaths"]
+		self.assists += kda_dict["assists"]
+		self.kda += kda
 
-	def add_damage_dealt(self, dmg):
-		self.add_stat("damage_dealt", dmg)
+	def add_damage_share(self, dmg_share):
+		self.damage_share += dmg_share
 
-	def add_gold(self, gold):
-		self.add_stat("gold_earned", gold)
+	def add_gold_share(self, gs):
+		self.gold_share += gs
 
-	def add_o_score(self, score):
-		self.add_stat("objectiveScore", score)
+	def add_obj_score(self, score):
+		self.obj_sc += score
 
-	def add_v_score(self, score):
-		self.add_stat("visionScore", score)
+	def add_vis_score(self, score):
+		self.vis_sc += score
 
-	def add_rating(self, rating):
-		self.rating += rating
+	def add_ratings(self, oa_rating, tier_rating):
+		self.oa_rating += oa_rating
+		self.tier_rating += tier_rating
 
 	def add_wins_loses(self, win):
 		if(win == 1):
-			self.stats["wins"] += 1
+			self.wins += 1
 		else:
-			self.stats["loses"] += 1
+			self.loses += 1
 
 	def add_stat(self, categ, stat):
 		if(categ not in self.stats):

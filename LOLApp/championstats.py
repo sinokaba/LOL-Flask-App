@@ -1,24 +1,20 @@
 class ChampionStats:
-	def __init__(self, champ_id, info):
-		#self.name = champ_name
+	def __init__(self, champ_id):
 		self.champ_id = champ_id
-		self.info = info
 		self.roles = {}
-		self.plays = 0
-		self.wins = 0
-		self.ov_rating = 0
-		self.kda = 0
-		self.bans = 0
+		self.plays = self.wins = self.bans = 0
+		self.oa_rating = 0
+		self.kills = self.deaths = self.assists = 0
 		self.players = {}
 
 	def add_role(self, role, win, kda, dmg, dmg_taken, laning, rating):
 		#if(role == "")
 		if(role not in self.roles):
-			self.roles[role] = {"plays":1, "build":{"start":{}, "boots":{},
-								"early_ahead":{}, "early_behind":{}, "core":{}, "late":{}}, "kda":kda, 
-								"wins":win, "matchups":{}, "damage":dmg, "damage_taken":dmg_taken,
-								"runes":{"red":{},"yellow":{},"blue":{},"black":{}}, "keystone":{}, "spells":{},
-								"laning":laning, "ov_role_rating":rating
+			self.roles[role] = {"plays":1, "build":{"start":{}, "boots":{}, "consumables":{}, "jung_items":{}, 
+								"vis_items":{}, "early_ahead":{}, "attk_speed_items":{}, "early_behind":{}, "core":{}, 
+								"late":{}}, "kda":kda, "wins":win, "matchups":{}, "damage_dealt":dmg, 
+								"damage_taken":dmg_taken, "runes":{"red":{},"yellow":{},"blue":{},"black":{}}, 
+								"keystone":{},"spells":{}, "laning":laning, "oa_role_rating":rating
 								}
 		else:
 			self.roles[role]["plays"] += 1
@@ -26,10 +22,10 @@ class ChampionStats:
 			self.roles[role]["kda"]["deaths"] += kda["deaths"]
 			self.roles[role]["kda"]["assists"] += kda["assists"]			
 			self.roles[role]["wins"] += win
-			self.roles[role]["damage"] += dmg
+			self.roles[role]["damage_dealt"] += dmg
 			self.roles[role]["damage_taken"] += dmg_taken
 			self.roles[role]["laning"] += laning
-			self.roles[role]["ov_role_rating"] += rating
+			self.roles[role]["oa_role_rating"] += rating
 		#print("CALLED")
 
 	def add_attribute(self, role, win, perf, attr, data, extra=None):
@@ -45,7 +41,7 @@ class ChampionStats:
 			temp[item_id]["wins"] += win
 			temp[item_id]["perf"] += perf
 
-	def add_skill_order(self, role, data, par_id, win):
+	def add_skill_order(self, role, data, par_id, win, performance):
 		if("skill_order" not in self.roles[role]):
 			self.roles[role]["skill_order"] = {}
 		order = 1
@@ -55,10 +51,11 @@ class ChampionStats:
 					if(order not in self.roles[role]["skill_order"]):
 						self.roles[role]["skill_order"][order] = {}
 					if(event["skillSlot"] not in self.roles[role]["skill_order"][order]):
-						self.roles[role]["skill_order"][order][event["skillSlot"]] = {"used":1, "wins":win}
+						self.roles[role]["skill_order"][order][event["skillSlot"]] = {"used":1, "wins":win, "perf":performance}
 					else:
 						self.roles[role]["skill_order"][order][event["skillSlot"]]["used"] += 1
 						self.roles[role]["skill_order"][order][event["skillSlot"]]["wins"] += win
+						self.roles[role]["skill_order"][order][event["skillSlot"]]["perf"] += performance
 					order += 1
 		#print(self.roles[role]["skill_order"])
 
@@ -72,41 +69,71 @@ class ChampionStats:
 				self.roles[role]["matchups"][enemy_champ]["wins_against"] += win
 			
 	def add_kda(self, kda):
-		if(self.kda is 0):
-			self.kda = kda
-		else:
-			self.kda["kills"] += kda["kills"]
-			self.kda["deaths"] += kda["deaths"]
-			self.kda["assists"] += kda["assists"]
+		self.kills += kda["kills"]
+		self.deaths += kda["deaths"]
+		self.assists += kda["assists"]
 
 	def get_skill_order(self):
 		for role in self.roles:
-			for lvl,skill in self.roles[role]["skill_order"].items():
-				while(len(skill) > 2):
-					del skill[(min(skill, key=lambda ss:skill[ss]["used"]))]
-				if(len(skill) > 1):
-					del skill[(min(skill, key=lambda ss:(skill[ss]["wins"]/skill[ss]["used"])))]
+			temp = {}
+			skill_rank = {1:0, 2:0, 3:0, 4:0}
+			print("skill order: ", self.roles[role]["skill_order"].items())
+			for lvl,skills in self.roles[role]["skill_order"].items():
+				print(lvl, " skills: ", skills)
+				print(skill_rank)
+				while(True):
+					if(len(skills) > 0):
+						skill = self.get_best_skill(skills)
+						if(len(temp) <= 0):
+							temp[lvl] = skill
+							skill_rank[skill] += 1
+							break
+						elif(lvl == 2):
+							if(temp[1] != skill):
+								temp[lvl] = skill
+								skill_rank[skill] += 1
+								break
+						else:
+							if(skill != 4):
+								if(skill_rank[skill] < 5):
+									temp[lvl] = skill
+									skill_rank[skill] += 1
+									break
+							else:
+								if(skill_rank[skill] < 3):
+									temp[lvl] = skill
+									skill_rank[skill] += 1
+									break
+						del skills[skill]
+					else:
+						break
+			self.roles[role]["skill_order"] = temp
 
-	def add_player(self, acused_id, win, kda, p_score):
+	def get_best_skill(self, skills_dict):
+		print("skills: ", skills_dict)
+		return max(skills_dict, key=lambda skill:skills_dict[skill]["perf"]/skills_dict[skill]["used"])
+
+	def add_player(self, playerId, win, kda, p_score):
 		#print("kda: ", kda, " acused id: ", acused_id, " perf: ", p_score)
 		#print("Acused id: ", acused_id, " kda: ", kda)
-		if(acused_id not in self.players):
-			self.players[acused_id] = {"plays":1, "wins":win, "kda":kda, "perf":p_score}
+		if(playerId not in self.players):
+			self.players[playerId] = {"plays":1, "wins":win, "kda":kda, "perf":p_score}
 		else:
 			#print("Plays before: ", self.players[acused_id]["plays"])
-			self.players[acused_id]["wins"] += win
-			self.players[acused_id]["kda"]["kills"] += kda["kills"]
-			self.players[acused_id]["kda"]["deaths"] += kda["deaths"]
-			self.players[acused_id]["kda"]["assists"] += kda["assists"]
-			self.players[acused_id]["perf"] += p_score
-			self.players[acused_id]["plays"] += 1
+			self.players[playerId]["wins"] += win
+			self.players[playerId]["kda"]["kills"] += kda["kills"]
+			self.players[playerId]["kda"]["deaths"] += kda["deaths"]
+			self.players[playerId]["kda"]["assists"] += kda["assists"]
+			self.players[playerId]["perf"] += p_score
+			self.players[playerId]["plays"] += 1
 		#print("Plays after: ", self.players[acused_id]["plays"])
 
 	def get_best_players(self):
+		self.get_most_played_players()
 		temp = {}
 		for player,stats in self.players.items():
 			if(stats["plays"] > self.plays*.08):
-				temp[player] = {"plays":stats["plays"], "wins":stats["wins"], "kda":stats["kda"], "perf":stats["perf"]}
+				temp[player] = self.players[player]
 		while(len(temp) > 10):
 			del temp[(min(temp, key=lambda player:(temp[player]["perf"]/temp[player]["plays"])))]
 
@@ -160,20 +187,21 @@ class ChampionStats:
 				if(stage == "start" or "early" in stage):
 					self.remove_rare_items(items, self.roles[role]["plays"], 4)
 				else:
-					self.remove_rare_items(items, self.roles[role]["plays"], 6)
+					self.remove_rare_items(items, self.roles[role]["plays"], 5)
 			self.get_boots(role, build)
 			self.get_core(build)
 			self.filter_items(build, "late", self.roles[role]["plays"]*.085)
 			self.filter_items(build, "start", self.roles[role]["plays"]*.085)
+
 
 	def get_boots(self, role, items_block):
 		boots = items_block["boots"]
 		if(len(boots) > 0):
 			best_boot = max(boots, key=lambda boot:boots[boot]["rating"]/boots[boot]["used"])
 			if(best_boot not in items_block["core"]):
-				items_block["core"][best_boot] = {"rating":boots[best_boot]["rating"], "used":boots[best_boot]["used"], "info":boots[best_boot]["info"]}
+				items_block["core"][best_boot] = boots[best_boot]
 			else:
-				items_block["early_ahead"][best_boot] = {"rating":boots[best_boot]["rating"], "used":boots[best_boot]["used"], "info":boots[best_boot]["info"]}
+				items_block["early_ahead"][best_boot] = boots[best_boot]
 		del self.roles[role]["build"]["boots"]	
 
 	def remove_rare_items(self, items_block, num_plays, threshold):
@@ -191,54 +219,70 @@ class ChampionStats:
 		stage_items = build[stage]
 		#print("items before: ", stage_items)
 		if(stage == "late"):
-			temp = {"defence":{}, "offense":{}}
+			defense = {}
+			offense = {}
 			try:
 				core_item = max(stage_items, key=lambda item:stage_items[item]["rating"]/stage_items[item]["used"])
 				#print("add to core: ", stage_items[core_item]["info"]["name"], " rating: ", stage_items[core_item]["rating"])
 				stats = stage_items[core_item]
-				build["core"][core_item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
+				build["core"][core_item] = stage_items[item]
 				del stage_items[core_item]			
 			except:
 				ValueError
 			for item,stats in stage_items.items():
-				item_tags = stats["info"]["tags"]
-				if(stats["rating"] > 1 and stats["used"] > role_plays):
-					if("Armor" in item_tags or "SpellBlock" in item_tags):
-						temp["defence"][item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
-					elif("Damage" in item_tags or "Attack" in item_tags):
-						temp["offense"][item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
-					else:
-						build["core"][item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
+				if(item not in build["core"] and item not in build["early_behind"] and item not in build["early_ahead"]):
+					item_tags = stats["info"]["tags"]
+					if(stats["rating"] > 1 and stats["used"] > role_plays):
+						if("Armor" in item_tags or "SpellBlock" in item_tags):
+							defense[item] = stage_items[item]
+						elif("Damage" in item_tags or "Attack" in item_tags):
+							offense[item] = stage_items[item]
+						else:
+							build["core"][item] = stage_items[item]
+			build["offense"] = offense
+			build["defense"] = defense
+			del stage_items
 		else:
 			temp = {}
-			cont = True
-			while(len(temp) < 3 and cont):
-				cont = False
-				cur_rating = -900
-				cur_item = -1
-				for item,stats in stage_items.items():
-					if(item not in temp and stats["rating"] > cur_rating and stats["used"] > role_plays):
-						cur_item = item
-						cur_rating = stats["rating"]
-				#print("current item: ", cur_item)
-				if(cur_item != - 1):
-					cont = True
-					stats = stage_items[cur_item]
-					temp[cur_item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
-		#print("new items: ", temp, " stage: ", stage)
-		build[stage] = temp
-		#print("build after: ", build)
+			print("Before stage: ", stage, " items: ", stage_items)
+			if(len(stage_items) > 3):
+				cont = True
+				while(len(temp) < 3 and cont):
+					cont = False
+					cur_rating = -900
+					cur_item = -1
+					for item,stats in stage_items.items():
+						if(item not in temp and stats["rating"] > cur_rating and stats["used"] > role_plays):
+							cur_item = item
+							cur_rating = stats["rating"]
+					print("current item: ", cur_item)
+					if(cur_item != -1 and cur_item not in temp):
+						cont = True
+						temp[cur_item] = stage_items[cur_item]
+			print("After stage: ", stage, " items: ", temp)
+			build[stage] = temp
 
 	def get_core(self, build):
 		temp = {}
 		for item,stats in build["early_ahead"].items():
 			if(item in build["early_behind"] and item not in build["core"]):
 				early_b_stats = build["early_behind"][item]
-				build["core"][item] = {"rating":stats["rating"]+early_b_stats["rating"], "used":stats["used"]+early_b_stats["used"], "info":stats["info"]}
+				build["core"][item] = early_b_stats
 				del build["early_behind"][item]
 			else:
-				temp[item] = {"rating":stats["rating"], "used":stats["used"], "info":stats["info"]}
-		print(temp)
+				temp[item] = build["early_ahead"][item]
+		if(len(build["jung_items"]) > 0):
+			best_jung_item = max(build["jung_items"], key=lambda item:build["jung_items"][item]["rating"]/build["jung_items"][item]["used"])
+			build["core"][best_jung_item] = build["jung_items"][best_jung_item]
+		if(len(build["vis_items"]) > 0):
+			best_vis_item = max(build["vis_items"], key=lambda item:build["vis_items"][item]["rating"]/build["vis_items"][item]["used"])
+			build["core"][best_vis_item] = build["vis_items"][best_vis_item]
+		if(len(build["attk_speed_items"]) > 0):
+			best_as_item = max(build["attk_speed_items"], key=lambda item:build["attk_speed_items"][item]["rating"]/build["attk_speed_items"][item]["used"])
+			build["core"][best_as_item] = build["attk_speed_items"][best_as_item]
+		del build["jung_items"]
+		del build["vis_items"]
+		del build["attk_speed_items"]
 		build["early_ahead"] = temp
 
 	def add_late(self, item_list, role, rating, items_dict):
@@ -247,21 +291,14 @@ class ChampionStats:
 				if(self.check_item(item_id, role, items_dict, "late")):
 					if("Boots" in items_dict["complete"][item_id]["tags"]):
 						self.add_item(item_id, items_dict["complete"][item_id], role, "boots", rating)
-					#print("item: ", item, " start: ", self.items["start"], " early: ", self.items["early"])
-					self.add_item(item_id, items_dict["complete"][item_id], role, "late", rating)
-
-	def check_item(self, item_id, role, items_dict, stage):
-		build = self.roles[role]["build"]
-		if(stage == "late"):
-			if(item_id not in build["start"] and item_id not in build["early_ahead"] and item_id not in build["early_behind"]):
-				return item_id in items_dict["complete"]
-			return False
-		elif(stage == "start"):
-			return item_id in items_dict["start"]
-		elif(stage == "early_ahead" or stage == "early_behind"):
-			if(item_id not in build["start"]):
-				return item_id in items_dict["complete"]
-			return False
+					elif(item_id in items_dict):
+						if("Jungle" in items_dict[item_id]["tags"]):
+							self.add_item(item_id, items_dict["complete"][item_id], role, "jung_items", rating)
+						else:
+							self.add_item(item_id, items_dict["complete"][item_id], role, "vis_items", rating)
+					else:
+						self.add_item(item_id, items_dict["complete"][item_id], role, "late", rating)
+						#print("item: ", item, " start: ", self.items["start"], " early: ", self.items["early"])
 
 	def add_item(self, item_id, item, role, stage, rating):
 		#print("roles: ", self.roles)
@@ -270,9 +307,6 @@ class ChampionStats:
 		else:
 			self.roles[role]["build"][stage][item_id]["rating"] += rating
 			self.roles[role]["build"][stage][item_id]["used"] += 1
-
-	def __str__(self):
-		return "Name: " + self.name + " Plays: " + str(self.plays) + " Wins: " + str(self.wins)
 
 	def get_items(self):
 		return self.items
