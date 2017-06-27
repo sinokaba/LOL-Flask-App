@@ -5,6 +5,7 @@ from playersStats import PlayerStats
 from api_calls import APICalls
 from models import *
 
+#can maybe record most optimal pathing, using match timeline, and also best ward placements
 class LolCrawler:
 	def __init__(self, region="NA"):
 		self.api_obj = APICalls(region)
@@ -14,7 +15,7 @@ class LolCrawler:
 		#self.items_data = self.get_all_items_data()["data"]
 		#logging.basicConfig(filename='crawl.log',level=logging.DEBUG)
 
-	def get_champ_stats(self, desired_rank="diamondPlus", num_matches=1000, reset=True, delete_static_data=True):
+	def get_champ_stats(self, desired_rank="diamondPlus", num_matches=1000, reset=True, delete_static_data=False):
 		start = time.time()
 		self.coords = {"TOP":{"x":range(500,4600),"y":range(9500,14500)},"MIDDLE":{"x":range(5000,9000),"y":range(6000,9500)},
 						"BOT":{"x":range(10000,14400),"y":range(600,4500)}, "JUNGLE":{"x":range(-120,14870),"y":range(-120,14980)}}
@@ -201,6 +202,7 @@ class LolCrawler:
 			champ_info = Champion.get(Champion.champId == champ.champId) 
 			print(champ_info.name, " role: ", champ.role, " for ranks: ", champ.rankTier)
 			print("Winrate: ", round(champ.totalWins/champ.totalPlays, 2), " overall rating: ", round(champ.oaRating/champ.totalPlays, 2))
+			"""
 			build = ast.literal_eval(champ.build)
 			for stage,item in build.items():
 				print(stage)
@@ -213,6 +215,7 @@ class LolCrawler:
 					else:
 						name = stats["info"]["name"]
 						print(itemId, " name: ", name, " rating: ", stats["rating"], " used: ", stats["used"])
+			"""
 			print(champ.skillOrder)
 
 	def crawl_history(self, acc_id, curr_rank, desired_rank, num_matches, name=None, season = 8):
@@ -272,7 +275,7 @@ class LolCrawler:
 					rank = curr_player_rank
 			else:
 				rank = summ_id
-			new_player = PlayerStats(acc_id, summ_id, name, self.region)
+			new_player = PlayerStats(acc_id, summ_id, name, self.region, rank)
 			self.players_visited[acc_id] = new_player
 
 	def get_tier_k(self, player_rank):
@@ -282,6 +285,8 @@ class LolCrawler:
 			return player_rank.lower()
 
 	def process_player_pairs(self, match_details, match_timeline, par, par_idts, curr_rank):
+		#note blue team consists of players with par ids 1-5, while red team is players from 5-10
+		#record blue and red win rate by patch, by league tier
 		picked_players = []
 		game_id = match_details["gameId"]
 		game_dur = match_details["gameDuration"]/60
@@ -388,8 +393,8 @@ class LolCrawler:
 			self.leagues[desired_rank]["champions"][champ] = new_champ
 
 	#perhaps split this section, because "add_champs_data" does not fully describe what it does
-	def add_champs_data(self, match_details, players, rank_tiers, role=None, match_timeline=[]):
-		laning_perf = self.analyze_matchup(match_timeline, players["team1"][0], players["team2"][0], role, rank_tiers)
+	def add_champs_data(self, match_details, players, rank_tier_key, role=None, match_timeline=[]):
+		laning_perf = self.analyze_matchup(match_timeline, players["team1"][0], players["team2"][0], role, rank_tier_key)
 		game_dur = match_details["gameDuration"]/60
 		for team,player in players.items():
 			if(team == "team2"):
@@ -406,18 +411,20 @@ class LolCrawler:
 			rating = (player_perf*.7) + (laning_perf*.3)
 			oa_rating = rating*mult
 			print("overall rating: ", oa_rating, " vs true rating ", rating)
-			self.leagues[rank_tiers[team]]["champions"][champ_id].add_player(acc_id, win, self.get_kda(player[0]), oa_rating)
+			print("rank tiers: ", rank_tier_key)
+			self.leagues[rank_tier_key[team]]["champions"][champ_id].add_player(acc_id, win, self.get_kda(player[0]), oa_rating)
 			self.add_players_data(player[0], acc_id, win, oa_rating, rating, game_dur)
 			self.players_visited[acc_id].add_champ(champ_id, win, player_perf)
-
-			champ_obj = self.leagues[rank_tiers[team]]["champions"][champ_id]
+			champ_obj = self.leagues[rank_tier_key[team]]["champions"][champ_id]
 			champ_obj.plays += 1
 			self.add_champ_stats(champ_obj, player[0], win, role, self.get_kda(player[0]), laning_perf, oa_rating, game_dur)
-			self.add_build(role, match_timeline, player[0], rank_tiers[team], laning_perf, oa_rating)
-			self.add_keystone(champ_obj, player[0], role, win, laning_perf)
-			self.add_spells(champ_obj, player[0], role, win, laning_perf)
-			self.add_runes(champ_obj, player[0], role, win, laning_perf)
-			self.leagues[rank_tiers[team]]["champions"][champ_id].add_skill_order(role, match_timeline, par_id, win, oa_rating)
+
+			if(rank_tier_key[team] == "diamondPlus" or rank_tier_key[team] == "platinum"):
+				self.add_build(role, match_timeline, player[0], rank_tier_key[team], laning_perf, oa_rating)
+				self.add_keystone(champ_obj, player[0], role, win, laning_perf)
+				self.add_spells(champ_obj, player[0], role, win, laning_perf)
+				self.add_runes(champ_obj, player[0], role, win, laning_perf)
+				self.leagues[rank_tier_key[team]]["champions"][champ_id].add_skill_order(role, match_timeline, par_id, win, oa_rating)
 
 	def get_multiplier(self, rank):
 		if(rank == "CHALLENGER"):
@@ -533,6 +540,7 @@ class LolCrawler:
 		else:
 			expected_share = .2
 		kill_par = self.get_player_share(ka, team_kills)
+		print("kill participation: ", kill_par)
 		if(kill_par >= .7):
 			score += 2
 		elif(kill_par >= .6):
@@ -597,11 +605,11 @@ class LolCrawler:
 		except:
 			KeyError
 
-	def add_build(self, role, timeline, player_details, desired_rank, laning, rating):
+	def add_build(self, role, timeline, player_details, rank_tier_key, laning, rating):
 		champ_id = player_details["championId"]
 		par_id = player_details["participantId"]
 		#print("laning: ", laning)
-		champ = self.leagues[desired_rank]["champions"][champ_id]
+		champ = self.leagues[rank_tier_key]["champions"][champ_id]
 		for idx,frame in enumerate(timeline[1:]):
 			for event in frame["events"]:
 				if("participantId" in event and event["participantId"] == par_id and event["type"] == "ITEM_PURCHASED"):
@@ -656,7 +664,7 @@ class LolCrawler:
 		stats = player["stats"]
 		champ.add_role(role, win, kda, stats["totalDamageDealtToChampions"]/dur, stats["totalDamageTaken"]/dur, laning, rating)
 
-	def analyze_matchup(self, timeline, p1, p2, role, rank_tiers):
+	def analyze_matchup(self, timeline, p1, p2, role, rank_tier_key):
 		#print("des rank: ", desired_rank)
 		p1_champ = p1["championId"]
 		p2_champ = p2["championId"]
@@ -673,8 +681,8 @@ class LolCrawler:
 		p1_points += self.tally_kp_and_op(timeline, p1["participantId"], p2["participantId"], role)
 		matchup_res = p1_points/7
 		#print("matchup result: ", matchup_res)
-		self.leagues[rank_tiers["team1"]]["champions"][p1_champ].add_matchup(role, p2_champ, matchup_res, win)
-		self.leagues[rank_tiers["team2"]]["champions"][p2_champ].add_matchup(role, p1_champ, -matchup_res, win)
+		self.leagues[rank_tier_key["team1"]]["champions"][p1_champ].add_matchup(role, p2_champ, matchup_res, win)
+		self.leagues[rank_tier_key["team2"]]["champions"][p2_champ].add_matchup(role, p1_champ, -matchup_res, win)
 		return matchup_res
 
 	def tally_cs_gold_lead(self, role, p1, p2):
@@ -880,9 +888,9 @@ class LolCrawler:
 
 if __name__ == "__main__":
 	crawler = LolCrawler()
-	crawler.get_champ_stats("platinum", 500, False, False)
+	crawler.get_champ_stats("gold", 250, False)
 	#crawler.get_champ_stats("bronze", 200, False)
-	#crawler.print_data("gold")
+	#crawler.print_data("platinum")
 	#crawler.get_champ_stats("platinum", 150, False)
 	#crawler.get_champ_stats("gold", 6, False)
 	crawler.close_err_log()

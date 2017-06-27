@@ -1,12 +1,50 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Scryer's Analytics
+    Scryer's Analytics - {{ champ }}
 {% endblock %}
 
-{% block body %}
-    <body>
-    	<h1>{{ champ }}</h1>
-    	<h2>{{ region }}</h2>
-    </body>
+{% block content %}
+	<div class="container">
+	   <div class="row row-offcanvas row-offcanvas-right">
+	      <div class="col-12 col-md-9">
+	         <div class="media">
+	            <img class="d-flex align-self-center mr-3" src="http://ddragon.leagueoflegends.com/cdn/7.12.1/img/champion/{{ img }}" alt="{{ img }}">
+	            <div class="media-body">
+	               <h4 class="mt-0">{{ champ_name }}</h4>
+	               <h6>Region: NA</h6>
+	               <h6>Roles: Jungle/Mid</h6>
+	               <p class="mb-0">Ally tips: {{ a_tips }}</p>
+	               <p class="mb-0">Enemy tips: {{ e_tips}}</p>
+	            </div>
+	         </div>
+	      </div>
+	      <!--/span-->
+	      <div class="col-6 col-md-3 sidebar-offcanvas" id="sidebar">
+	         <ul class="list-group">
+				<li class="list-group-item justify-content-between">
+					Overall rating: {{ rank_data[0].oaRating }}
+					<span class="badge badge-default badge-pill">14</span>
+				</li>
+				<li class="list-group-item justify-content-between">
+			    	Overall winrate: 50%
+			    	<span class="badge badge-default badge-pill">2</span>
+			  	</li>
+			  	<li class="list-group-item justify-content-between">
+			    	Overall pickrate: 5%
+			    	<span class="badge badge-default badge-pill">1</span>
+			  	</li>
+			  	<li class="list-group-item justify-content-between">
+			    	Overall banrate: 3%
+			    	<span class="badge badge-default badge-pill">1</span>
+			  	</li>
+	         </ul>
+	      </div>
+	      <!--/span-->
+	   </div>
+	   <!--/row-->
+	   <div class="row">
+	      <h3>Amumu sucks bruh</h3>
+	   </div>
+	</div>
 {% endblock %}

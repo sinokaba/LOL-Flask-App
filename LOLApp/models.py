@@ -1,6 +1,6 @@
 from peewee import *
 
-database = SqliteDatabase("Scryer.db")
+database = SqliteDatabase("ScryerTest.db")
 
 class BaseModel(Model):
 	class Meta:
@@ -63,22 +63,22 @@ class ChampStats(BaseModel):
 	assists = IntegerField()
 	oaRating = FloatField()
 	roleRating = FloatField()
-	spells = TextField()
+	spells = TextField(null=True)
 	players = TextField()
-	skillOrder = TextField()
+	skillOrder = TextField(null=True)
 	dpm = FloatField()
 	dtpm = FloatField()
 	matchups = TextField()
 	region = CharField()
 	rankTier = CharField()
-	runes = TextField()
-	startingItems = TextField()
-	consumeableItems = TextField()
-	earlyBehindItems = TextField()
-	earlyAheadItems = TextField()
-	coreItems = TextField()
-	offenseItems = TextField()
-	defenseItems = TextField()
+	runes = TextField(null=True)
+	startingItems = TextField(null=True)
+	consumeableItems = TextField(null=True)
+	earlyBehindItems = TextField(null=True)
+	earlyAheadItems = TextField(null=True)
+	coreItems = TextField(null=True)
+	offenseItems = TextField(null=True)
+	defenseItems = TextField(null=True)
 
 	class Meta:
 		order_by = ('totalPlays',)

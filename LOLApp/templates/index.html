@@ -1,11 +1,51 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-{% block title %}
-    Scryer's Analytics
-{% endblock %}
-
-{% block body %}
-    <body background="/static/imgs/background.jpg">
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+      <script src="https://use.fontawesome.com/5a5fd64e5c.js"></script>
+    <!-- Optional theme -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="{{
+      url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/summoner.css') }}">
+    <link rel="shortcut icon" type="image/png" href="/static/imgs/orb-icon-16.png" class="rounded-circle"/>
+    <title>Scryer's Analytics</title>
+  </head>
+  <body background="/static/imgs/background.jpg">
+        <nav class="navbar navbar-toggleable-md fixed-top navbar-light bg-faded">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            <a class="navbar-brand" href="/">
+              <img src="/static/imgs/orb.png" width="30" height="30" alt="scrying-orb-icon" class="rounded-circle">
+              Scryer's Analytics
+            </a>
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+              <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="sideSelection.html">Team Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="allChamps.html">Champ Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="faq.html">FAQ</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
         <div class="container">
             <div id="landing">
                 <div id="title">
@@ -18,22 +58,13 @@
                             </ul>
                         {% endif %}
                     {% endwith %}
-                    <div class="col">
-                        <div class="col">
-                            <h1 style="color:white">Scryer's Analytics</h1>
-                        </div>
-                        <div class="col">
-                            <img src="/static/imgs/orb.png">
-                        </div>
-                    </div>
+                    <h1 style="color:white">Scryer's Analytics</h1>
                 </div>
-                <form id="search-form" action="{{ url_for('get_data') }}" method="POST">
+                <form id="search-form"  class="my-2 my-lg-0" action="{{ url_for('get_data') }}" method="POST">
                     <div class="input-group">
-                        <input type="text" class="form-control" name="name" maxlength="16" id="main-search" list="champs-datalist" size="16" placeholder="Summoner or Champ name..." autocomplete="off">
-                        <datalist id="champs-datalist"></datalist>
-                        <span class="input-group-btn">
-                            <button class="btn btn-secondary" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
-                        </span>
+                        <input type="text" class="form-control mr-sm-2" name="name" maxlength="16" id="main-search" list="main-datalist" size="32" placeholder="Summoner or Champ name..." autocomplete="off">
+                        <datalist id="main-datalist"></datalist>
+                        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
                     </div>
                     <br/>
                     <div class="col-md-12">
@@ -93,9 +124,9 @@
             <div class="row" id="opening-tables">
                 {% if best_champs %}
                     <div class="col table-wrapper" style="border-right: 1.5px solid black;">
-                        <table class="table table-hover">
+                        <table class="table table-hover table-sm">
                           <caption class="table-title">Best performing Champions</caption>
-                          <thead>
+                          <thead class="thead-inverse">
                             <tr>
                               <th>Role</th>
                               <th>Champ</th>
@@ -126,9 +157,9 @@
                 {% endif %}
                 {% if best_players %}
                     <div class="col table-wrapper" style="border-right: 1.5px solid black;">
-                        <table class="table table-hover">
+                        <table class="table table-hover table-sm">
                           <caption class="table-title">Best performing players</caption>
-                          <thead>
+                          <thead class="thead-inverse">
                             <tr>
                               <th>Summoner</th>
                               <th>Rank</th>
@@ -151,9 +182,9 @@
                 {% endif %}
                 {% if best_offmeta_champs %}
                     <div class="col table-wrapper">
-                        <table class="table table-hover">
+                        <table class="table table-hover table-sm">
                           <caption class="table-title">Best off-meta Picks</caption>
-                          <thead>
+                          <thead class="thead-inverse">
                             <tr>
                               <th>Role</th>
                               <th>Champ</th>
@@ -184,10 +215,10 @@
                 {% endif %}
             </div>
         </div>
-        <footer class="footer">
-          <div class="container">
-            <p class="text-muted" style="font-size:10px">Scryer's Analytics isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.</p>
-          </div>
-        </footer>
-    <body>
-{% endblock %}
+      <footer class="footer">
+        <div class="container">
+          <span>Scryer's Analytics isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.</span>
+        </div>
+      </footer>
+    </body>
+</html>

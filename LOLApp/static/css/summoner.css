@@ -1,0 +1,204 @@
+ul, li{
+	text-decoration: none;
+	list-style-type: none;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  line-height: 60px; /* Vertically center the text there */
+  background-color: #f5f5f5;
+  font-size: 8px !important;
+}
+
+body > .container {
+  padding: 60px 15px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+h1{
+	text-align: center;
+}
+
+table{
+	font-size: .65rem;
+}
+
+td{
+	font-weight: 500;
+}
+
+.table-wrapper{
+	border: 1.5px solid black;
+}
+
+.table-title{
+	text-align: center;
+	caption-side: top;
+	color: #428bca;
+    font-weight: bold;
+	font-size: 1rem;
+}
+
+.good{
+	color: green;
+}
+
+.bad{
+	color: red;
+}
+
+#opening-tables{
+	background-color: rgba(255, 255, 255, 0.65);
+	margin-top: 12px;
+}
+#landing{
+	margin: 0 auto;
+}
+
+#search-form{
+	margin: 0 auto;
+	max-width: 350px;
+}
+
+#invalidName{
+	color: red;
+}
+
+#title{
+	text-align: center;
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+#matchHistory{
+	margin: 0 auto;
+	float: none;
+}
+
+#profileIcon{
+	margin-top: 25px;
+}
+
+.remake{
+	background-color: #DCDCDC;
+}
+
+.remake:hover{
+	background-color: #c6c6c6 !important;
+}
+
+.match{
+	border-bottom: 3px solid white;
+}
+
+.defeat{
+	background-color: #ff9999;
+}
+
+.defeat:hover{
+	background-color: #FF6666 !important;
+}
+
+.victory{
+	background-color: #99cc99;
+}
+
+.victory:hover{
+	background-color: #66b266 !important;
+}
+
+.date{
+	font-size: 10px;
+}
+
+.items img, .champIcon img, .acc img, .spells img{
+	border-radius: 15%;
+}
+
+.items img{
+	width: 30%;
+}
+
+.info{
+	margin-top: none;
+	padding: 1.250em;
+}
+
+.acc img{
+	width: 50%;
+}
+
+.spells img{
+	width: 80%;
+}
+
+.spells, .acc{
+	padding-left: 0.375em;
+	padding-top: 0.625em;
+}
+
+.champIcon{
+	padding-right: 0;
+}
+
+.champIcon img{
+	width: 90%;
+}
+
+.moreMatches{
+	display: none;
+}
+
+.container{
+	text-align: center;
+}
+
+/* xs < 768 */
+ @media screen and (max-width: 767px) {
+    th, td {
+        font-size: 0.9em;
+    }
+}
+/* sm */
+ @media screen and (min-width: 768px) {
+    th, td {
+        font-size: 1em;
+    }
+}
+/* md */
+ @media screen and (min-width: 992px) {
+    th, td {
+        font-size: 1.2em;
+    }
+}
+/* lg */
+ @media screen and (min-width: 1200px) {
+    th, td {
+        font-size: 1.3em;
+    }
+}
+
+.headerIcons{
+	width: 50%;
+}

@@ -14,7 +14,7 @@ class ChampionStats:
 								"vis_items":{}, "early_ahead":{}, "attk_speed_items":{}, "early_behind":{}, "core":{}, 
 								"late":{}}, "kda":kda, "wins":win, "matchups":{}, "damage_dealt":dmg, 
 								"damage_taken":dmg_taken, "runes":{"red":{},"yellow":{},"blue":{},"black":{}}, 
-								"keystone":{},"spells":{}, "laning":laning, "oa_role_rating":rating
+								"keystone":{},"spells":{}, "laning":laning, "oa_role_rating":rating, "skill_order":{}
 								}
 		else:
 			self.roles[role]["plays"] += 1
@@ -42,8 +42,6 @@ class ChampionStats:
 			temp[item_id]["perf"] += perf
 
 	def add_skill_order(self, role, data, par_id, win, performance):
-		if("skill_order" not in self.roles[role]):
-			self.roles[role]["skill_order"] = {}
 		order = 1
 		for frame in data:
 			for event in frame["events"]:

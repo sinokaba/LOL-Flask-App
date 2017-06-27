@@ -5,8 +5,6 @@ from .summoner import Summoner
 from .api_calls import APICalls
 from .models import *
 
-app.secret_key = "change this to something super secret"
-
 @app.before_request
 def before_request():
 	#create and initialize db
@@ -20,7 +18,7 @@ def teardown_request(exception):
 
 @app.route('/')
 def index():
-	champ_data = ChampStats.select().where(ChampStats.rankTier == "diamondPlus").order_by((ChampStats.oaRating/ChampStats.totalPlays).desc())
+	champ_data = ChampStats.select().where(ChampStats.rankTier == "diamondPlus").order_by((ChampStats.roleRating/ChampStats.rolePlays).desc())
 	champs_basic = Champion.select()
 	player_data = Player.select().where(Player.region == "NA").order_by(Player.oaRating.desc())
 	top_5_champs = {}
@@ -30,18 +28,22 @@ def index():
 		if(champ.totalPlays >= 10 and len(top_5_champs) < 5):
 			if(champ not in top_5_champs):
 				name = Champion.get(Champion.champId == champ.champId).name
-				top_5_champs[champ] = {"name":name, "role":champ.role, "wr":round(champ.totalWins/champ.totalPlays, 2)*100, "rating":round(champ.oaRating/champ.totalPlays,2)}
+				print("name: ", name)
+				top_5_champs[champ] = {"name":name, "role":champ.role, "wr":round((champ.roleWins/champ.rolePlays)*100, 2), "rating":round(champ.roleRating/champ.rolePlays,2)}
 		if(len(top_5_offmeta_champs) < 5 and (int(champ.rolePlays)/champ.totalPlays) <= .2):
 			if(champ not in top_5_offmeta_champs):
 				champ_ob = Champion.get(Champion.champId == champ.champId).name
-				top_5_offmeta_champs[champ] = {"name":name, "role":champ.role, "wr":round(champ.totalWins/champ.totalPlays, 2)*100, "rating":round(champ.oaRating/champ.totalPlays,2)}
+				top_5_offmeta_champs[champ] = {"name":champ_ob, "role":champ.role, "wr":round((champ.roleWins/champ.rolePlays)*100, 2), "rating":round(champ.roleRating/champ.rolePlays,2)}
 	return render_template("index.html", best_champs=top_5_champs, best_offmeta_champs=top_5_offmeta_champs, best_players=top_5_players, champ_info=champs_basic)
 
 @app.route('/search', methods=["GET", "POST"])
 def get_data():
 	if request.method == "POST":
 		name = request.form["name"]
-		region = request.form["region"]
+		if("region" in request.form):
+			region = request.form["region"]
+		else:
+			region = "NA"
 		champ_query = Champion.select().where(Champion.name == name)
 		print(Champion.get(Champion.champId == 31).name, " vs ", name)
 		if(champ_query.exists()):
@@ -60,11 +62,17 @@ def valid_name(name):
 
 @app.route('/<region>/champ/<name>')
 def get_champ(name, region):
-	return render_template("champ.html", champ=name, region=region)
+	champ = Champion.get(Champion.name == name)
+	ally_tips = ast.literal_eval(champ.allyTips)[0]
+	enemy_tips = ast.literal_eval(champ.enemyTips)[0]
+	print(ChampStats.select().where(ChampStats.rankTier == "platinum").count())
+	data = ChampStats.select().where(ChampStats.champId == champ.champId, ChampStats.region == region)
+	for rank in data:
+		print(rank.rankTier)
+	return render_template("champ.html", champ_name=name, region=region, img=champ.image, rank_data=data, a_tips=ally_tips, e_tips=enemy_tips, champ_data=champ)
 
 @app.route('/<region>/summoner/<name>')#@cache.cached(timeout=500)
 def get_summoner(name, region):
-	api
 	#cache = MemcachedCache(['127.0.0.1:11211'])
 	validate = regex.compile('^[a-zA-Z_0-9\\p{L} _\\.]+$')
 	if(region != "NA"):

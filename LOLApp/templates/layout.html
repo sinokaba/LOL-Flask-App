@@ -1,25 +1,60 @@
 <!DOCTYPE html>
-
 <html lang="en">
-  	<head>
-    	<!-- Required meta tags -->
-    	<meta charset="utf-8">
-    	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-		<script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-		<!-- Latest compiled and minified CSS -->
-    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-	    <script src="https://use.fontawesome.com/5a5fd64e5c.js"></script>
-		<!-- Optional theme -->
- 		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-		<script>window.jQuery || document.write('<script src="{{
-			url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
-		<link rel="stylesheet" href="{{ url_for('static', filename='summoner.css') }}">
-		<title>{% block title %}{% endblock %}</title>
-	</head>
-	{% block body %}
-	{% endblock %}
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+      <script src="https://use.fontawesome.com/5a5fd64e5c.js"></script>
+    <!-- Optional theme -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="{{
+      url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/summoner.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/offCanvas.css') }}">
+    <link rel="shortcut icon" type="image/png" href="/static/imgs/orb-icon-16.png" class="rounded-circle"/>
+    <title>{% block title %}{% endblock %}</title>
+  </head>
+	<body>
+        <nav class="navbar navbar-toggleable-md navbar-light fixed-top bg-faded">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            <a class="navbar-brand" href="/">
+              <img src="/static/imgs/orb.png" width="30" height="30" alt="" style="border-radius:50%">
+              Scryer's Analytics
+            </a>
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="sideSelection.html">Team Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="allChamps.html">Champ Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="faq.html">FAQ</a>
+              </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" action="{{ url_for('get_data') }}" method="POST">
+              <div class="input-group">
+                <input class="form-control mr-sm-2" type="text" name="name" id="nav-search" list="nav-datalist" maxlength="16" placeholder="Champ or Player" autocomplete="off">
+                <datalist id="nav-datalist"></datalist>
+                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+              </div>
+            </form>
+          </div>
+        </nav>
+		{% block content %}
+		{% endblock %}
+	</body>
 </html>

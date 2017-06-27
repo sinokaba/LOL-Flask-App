@@ -1,4 +1,4 @@
-from .APIConstants import *
+from APIConstants import *
 #from config import *
 import requests, time, urllib, json
 #from log import logger
