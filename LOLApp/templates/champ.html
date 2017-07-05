@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Scryer's Analytics - {{ champ }}
+    Scryer's Analytics - {{ region }}/{{ champ_name }}
 {% endblock %}
 
 {% block content %}
@@ -9,42 +9,310 @@
 	   <div class="row row-offcanvas row-offcanvas-right">
 	      <div class="col-12 col-md-9">
 	         <div class="media">
-	            <img class="d-flex align-self-center mr-3" src="http://ddragon.leagueoflegends.com/cdn/7.12.1/img/champion/{{ img }}" alt="{{ img }}">
+	            <div class="d-flex mr-3">
+                    <div class="card" style="width:10rem">
+                      <img class="card-img-top" src="http://ddragon.leagueoflegends.com/cdn/7.12.1/img/champion/{{ img }}" alt="{{ img }}">
+                      <div class="card-block">
+    				    <span class="badge badge-success">Good early game</span>
+    					<span class="badge badge-warning">Late game scaler</span>
+    					<span class="badge badge-danger">Weak to ganks</span>
+                      </div>
+                    </div>
+			    </div>
 	            <div class="media-body">
-	               <h4 class="mt-0">{{ champ_name }}</h4>
-	               <h6>Region: NA</h6>
-	               <h6>Roles: Jungle/Mid</h6>
-	               <p class="mb-0">Ally tips: {{ a_tips }}</p>
-	               <p class="mb-0">Enemy tips: {{ e_tips}}</p>
+	            	<div class="row">
+	            		<div class="col-md-6" id="champ-name-cont">
+	               			<h4 class="mt-0">{{ champ_name }}</h4>
+	               		</div>
+	               		<div class="col-md-6" id="compare-cont">
+	               			<div class="input-group">
+					            <form class="form-inline my-2 my-lg-0" id="additional-champ">
+					              <div class="input-group">
+					                <input class="form-control mr-sm-2 invisible" type="text" id="add-champ-input" name="additionalChamp" list="datalist" maxlength="16" placeholder="Champion name" autocomplete="off">
+					                <datalist id="datalist"></datalist>
+									<button type="button" class="btn btn-primary" id="compare">Compare</button>
+									<button type="submit" class="btn btn-success hidden" id="add">Add</button>
+									<button type="button" class="btn btn-danger hidden" id="remove">Remove</button>
+								</div>
+					            </form>
+							</div>
+						</div>
+		            </div>
+		            <p id="result" class="hidden">ss</p>
+	                <h6>Region: {{ region }}</h6>
+	                <div class="row">
+	                	<div class="col">
+			               <h6>Tags:
+			               	{% if tags %}
+			               		{% if tags|length > 1 %}
+				               		{{ tags[0] }}/{{ tags[1] }}
+				               	{% else %}
+				               		{{ tags[0] }}
+				               	{% endif %}
+			               	{% endif %}
+			               	</h6>
+			            </div>
+			        </div>
+			        <h6>Rating:
+						<span class="rating">{{ '%0.2f'| format((rank_data[0].oaRating/rank_data[0].totalPlays)|float) }}</span></h6>
+	               <p class="mb-0 tips">Ally tips: {{ a_tips }}</p>
+	               <p class="mb-0 tips">Enemy tips: {{ e_tips}}</p>
 	            </div>
 	         </div>
 	      </div>
 	      <!--/span-->
-	      <div class="col-6 col-md-3 sidebar-offcanvas" id="sidebar">
+	      <div class="sidebar-offcanvas" id="sidebar">
 	         <ul class="list-group">
 				<li class="list-group-item justify-content-between">
-					Overall rating: {{ rank_data[0].oaRating }}
-					<span class="badge badge-default badge-pill">14</span>
+					<div class="col-6">
+						Avg KDA:
+					</div>
+					<div class="col-3 kda">
+						{{ '%0.2f'| format(rank_data[0].kda/rank_data[0].totalPlays) }}
+					</div>
+					<div class="col-3">
+						<span class="badge badge-default badge-pill">14</span>
+					</div>
 				</li>
 				<li class="list-group-item justify-content-between">
-			    	Overall winrate: 50%
-			    	<span class="badge badge-default badge-pill">2</span>
+					<div class="col-6">
+						Winrate:
+					</div>
+					<div class="col-3 wr">
+						{{ '%0.2f'| format(((rank_data[0].totalWins/rank_data[0].totalPlays)*100)|float) }}%
+					</div>
+					<div class="col-3">
+						<span class="badge badge-default badge-pill">14</span>
+					</div>
 			  	</li>
 			  	<li class="list-group-item justify-content-between">
-			    	Overall pickrate: 5%
-			    	<span class="badge badge-default badge-pill">1</span>
+					<div class="col-6">
+						Playrate:
+					</div>
+					<div class="col-3 pr">
+						{{ '%0.2f'| format(((rank_data[0].totalPlays/500)*100)|float) }}%
+					</div>
+					<div class="col-3">
+						<span class="badge badge-default badge-pill">14</span>
+					</div>
 			  	</li>
 			  	<li class="list-group-item justify-content-between">
-			    	Overall banrate: 3%
-			    	<span class="badge badge-default badge-pill">1</span>
+					<div class="col-6">
+						Banrate:
+					</div>
+					<div class="col-3 br">
+						{{ '%0.2f'| format(((rank_data[0].bans/500)*100)|float) }}%
+					</div>
+					<div class="col-3">
+						<span class="badge badge-default badge-pill">14</span>
+					</div>
 			  	</li>
 	         </ul>
 	      </div>
 	      <!--/span-->
 	   </div>
 	   <!--/row-->
+	   <hr />
+
+		<div class="container" style="text-align:center;">
+            <div class="card text-center">
+              <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                	{% if roles %}
+             			{% for role in roles %}
+             				{% if loop.index == 1 %}
+			                  <li class="nav-item role-tab">
+			                    <a class="nav-link active" href="#role{{ loop.index }}" data-toggle="tab">{{ role }}</a>
+			                  </li>
+			                {% else %}
+			                  <li class="nav-item role-tab">
+			                    <a class="nav-link" href="#role{{ loop.index }}" data-toggle="tab">{{ role }}</a>
+			                  </li>
+			                {% endif %}
+		                {% endfor %}
+	                {% endif %}
+                </ul>
+              </div>
+              <div class="card-block">
+            <div class="tab-content">
+    		{% if dia %}
+	    		{% for champ in dia %}
+	    			{% if loop.index == 1 %}
+			        	<div class="tab-pane active" id="role{{ loop.index }}">
+			        {% else %}
+			        	<div class="tab-pane" id="role{{ loop.index }}">
+			        {% endif %}
+				    		<div class="row">
+		        				<div class="col" style="text-align: left">
+		        					<div>
+		            					<div class="row">
+		                                    <div class="col">
+		                                        <h4>Stats</h4>
+		                                    </div>
+		                                    <div class="col">
+		                                        <h5>Build</h5>
+		                                    </div>
+		            					</div>
+		        						    </div>
+		        						    <div class="row">
+		        						    	<div class="col">
+		        						    	    <div class="row">
+		        									    <div class="col-md-3">
+		                						    		<p>Role winrate</p>
+		        									    </div>
+		        									    <div class="col-md-8">
+		            									    <div class="progress">
+		            									    	{% set winrate = '%0.1f'| format((champ.roleWins['totalRoleWins']/champ.rolePlays)*100) %}
+		                									  <div class="progress-bar" role="progressbar" style="width: {{ winrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ winrate }}%</div>
+		                									</div>
+		            									</div>
+		        									</div>
+		        									<div class="row">
+		        									    <div class="col-md-3">
+		                						    		<p>Role playrate</p>
+		        									    </div>
+		        									    <div class="col-md-8">
+		                						    		<div class="progress">
+		                						    			{% set playrate = '%0.1f'| format((champ.rolePlays/champ.totalPlays)*100) %}
+		                									  <div class="progress-bar" role="progressbar" style="width: {{ playrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ playrate }}%</div>
+		                									</div>
+		            									</div>
+		        									</div>
+		        									<div class="row">
+		        									    <div class="col-md-3">
+		                						    		<p>Role rating</p>
+		        									    </div>
+		        									    <div class="col-md-8">
+		            						    		    <p class="rating">{{ '%0.2f'| format(champ.roleRating/champ.rolePlays) }}</p>
+		            						    		</div>
+		            						    	</div>
+		        						    	</div>
+		        						        <div class="col">
+		            						 		<div class="row">
+		            						 		    <div class="col-md-3">
+		                						    		<h6>Best Runes</h6>
+		            						 		    </div>
+		            						 		    <div class="col-md-9">
+		                							    	{% for rune,img in r.items() %}
+		                							    	    {% if "Quintessence" in rune %}
+		                							    		    <img src={{ img }} title="{{ rune }}" /><span class="badge badge-primary">3x</span>
+		                							    	    {% else %}
+		                							    		    <img src={{ img }} title="{{ rune }}" /><span class="badge badge-primary">9x</span>
+		                							    		{% endif %}
+		                							    	{% endfor %}
+		            						 		    </div>
+		            							    </div>
+		            							    <div class="row">
+		            							        <div class="col-md-3">
+		            							            <h6>Best Keystone</h6>
+		            							        </div>
+		            							        <div class="col-md-9">
+		            							        	{% for ks,info in champ.keystone.items() %}
+		                						    	    	<img src="http://ddragon.leagueoflegends.com/cdn/7.11.1/img/mastery/{{ ks }}.png" title="{{ info['name'] }}" />
+		                						    	    {% endfor %}
+		            							        </div>
+		            						    	</div>
+		            						    	<div class="row">
+		            						    	    <div class="col-md-3">
+		                    						    	<h6>Best Build</h6>
+		            						    	    </div>
+		            						    	    <div class="col-md-9">
+		                						    	    {{ champ.startingItems }}
+		            						    	    </div>
+		            						    	</div>
+		            						    </div>
+		        						    </div>
+		        						</div>
+		        					</div>
+		        				</div>
+	      	   	{% endfor %}
+	    	{% endif %}
+    			 </div>
+            </div>
+              </div>
+            </div>
+		</div>
+
+		<hr />
+
 	   <div class="row">
-	      <h3>Amumu sucks bruh</h3>
+		<div class="card-group">
+		  <div class="card">
+		    <img class="card-img-top" src="/static/rank_icons/base-icons/GOLD.png" style="width:180px" alt="Card image cap">
+		    <div class="card-block">
+		      <h4 class="card-title">Stats in Gold</h4>
+		      <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+    		</div>
+		    <div class="card-footer">
+		      <small class="text-muted">Last updated 3 mins ago</small>
+		    </div>
+		  </div>
+		  <div class="card">
+		    <img class="card-img-top" src="/static/rank_icons/base-icons/SILVER.png" style="width:180px" alt="Card image cap">
+		    <div class="card-block">
+		      <h4 class="card-title">Stats in Silver</h4>
+		      <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+		    </div>
+		    <div class="card-footer">
+		      <small class="text-muted">Last updated 3 mins ago</small>
+		    </div>
+		  </div>
+		  <div class="card">
+		    <img class="card-img-top" src="/static/rank_icons/base-icons/BRONZE.png" style="width:180px" alt="Card image cap">
+		    <div class="card-block">
+		      <h4 class="card-title">Stats in Bronze</h4>
+		        <div class="row">
+                    <div class="col-md-3">
+                        Winrate:
+                    </div>
+                    <div class="col-md-9">
+                        <div class="progress">
+            			    <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">33%</div>
+            			</div>
+                    </div>
+		        </div>
+		        <div class="row">
+                    <div class="col-md-3">
+                        Winrate:
+                    </div>
+                    <div class="col-md-9">
+                        <div class="progress">
+            			    <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">33%</div>
+            			</div>
+                    </div>
+		        </div>
+		        <div class="row">
+                    <div class="col-md-3">
+                        Winrate:
+                    </div>
+                    <div class="col-md-9">
+                        <div class="progress">
+            			    <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">33%</div>
+            			</div>
+                    </div>
+		        </div>
+    			</div>
+		    <div class="card-footer">
+		      <small class="text-muted">Last updated 3 mins ago</small>
+		    </div>
+		  </div>
+		</div>
 	   </div>
+
+	   <hr />
+
+		<div class="card text-center">
+		  <div class="card-header">
+		    Featured
+		  </div>
+		  <div class="card-block">
+		    <h4 class="card-title">{{ champ_name }} Matchups</h4>
+		    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+		    <a href="#" class="btn btn-primary">Go somewhere</a>
+		  </div>
+		  <div class="card-footer text-muted">
+		    2 days ago
+		  </div>
+		</div>
 	</div>
 {% endblock %}

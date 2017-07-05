@@ -6,6 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='xregexp.js') }}"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- Latest compiled and minified CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
@@ -16,7 +17,8 @@
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="{{
       url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/summoner.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="shortcut icon" type="image/png" href="/static/imgs/orb-icon-16.png" class="rounded-circle"/>
     <title>Scryer's Analytics</title>
   </head>
@@ -46,80 +48,58 @@
             </ul>
           </div>
         </nav>
-        <div class="container">
+        <div class="container" id="home-content">
             <div id="landing">
                 <div id="title">
-                    {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            <ul class=flashes>
-                            {% for message in messages %}
-                              <li><h1 id="invalidName">{{ message }}</h1></li>
-                            {% endfor %}
-                            </ul>
-                        {% endif %}
-                    {% endwith %}
                     <h1 style="color:white">Scryer's Analytics</h1>
                 </div>
-                <form id="search-form"  class="my-2 my-lg-0" action="{{ url_for('get_data') }}" method="POST">
-                    <div class="input-group">
-                        <input type="text" class="form-control mr-sm-2" name="name" maxlength="16" id="main-search" list="main-datalist" size="32" placeholder="Summoner or Champ name..." autocomplete="off">
-                        <datalist id="main-datalist"></datalist>
-                        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
-                    </div>
-                    <br/>
-                    <div class="col-md-12">
-                        <div class="btn-group" data-toggle="buttons">
-                          <label class="btn btn-primary active">
-                            <input type="radio" name="region" id="option1" autocomplete="off" value="NA" checked>NA
-                          </label>
-                          <label class="btn btn-primary">
-                            <input type="radio" name="region" id="option2" autocomplete="off" value="EUW">EUW
-                          </label>
-                          <label class="btn btn-primary">
-                            <input type="radio" name="region" id="option2" autocomplete="off" value="EUNE">EUNE
-                          </label>
-                          <label class="btn btn-primary">
-                            <input type="radio" name="region" id="option3" autocomplete="off" value="KR">KR
-                          </label>
+                <div class="row">
+                    <form id="search-form"  class="my-2 my-lg-0" action="{{ url_for('get_data') }}" method="POST">
+                        <div class="row">
+                            <div class="col">
+                                <div class="input-group">
+                                    <input type="text" class="form-control mr-sm-2" name="name" maxlength="16" id="main-search" list="datalist" size="32" placeholder="Summoner or Champ name..." autocomplete="off">
+                                    <datalist id="datalist"></datalist>
+                                    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <!--
-                    <div class="form-group row">
-                        <label class="col-xs-6 col-md-4">Champion</label>
-                        <div class="col-xs-12 col-sm-6 col-md-8">
-                            <input name="name" class="form-control" id="champName" maxlength="16" size="16" type="text"/>
+                        <div class="row">
+                            <div class="col">
+                                {% with messages = get_flashed_messages() %}
+                                    {% if messages %}
+                                        <ul class=flashes style="padding:0; margin:2px">
+                                        {% for message in messages %}
+                                          <li id="invalidName">{{ message }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-xs-6 col-md-4 col-form-label">Tier</label>
-                        <div class="col-xs-12 col-sm-6 col-md-8">
-                            <select id="rankTier" name="rankTier" class="form-control">
-                                <option value="all">All</option>
-                                <option value="diaUp">Diamond+</option>
-                                <option value="plat">Plat</option>
-                                <option value="gold">Gold</option>
-                                <option value="silver">Silver</option>
-                                <option value="bronze">Bronze</option>
-                            </select>
+                        <div class="row">
+                            <div class="col">
+                                <div class="btn-group" data-toggle="buttons">
+                                  <label class="btn btn-primary active">
+                                    <input type="radio" name="region" id="option1" autocomplete="off" value="NA" checked>NA
+                                  </label>
+                                  <label class="btn btn-primary">
+                                    <input type="radio" name="region" id="option2" autocomplete="off" value="EUW">EUW
+                                  </label>
+                                  <label class="btn btn-primary">
+                                    <input type="radio" name="region" id="option2" autocomplete="off" value="EUNE">EUNE
+                                  </label>
+                                  <label class="btn btn-primary">
+                                    <input type="radio" name="region" id="option2" autocomplete="off" value="BR">BR
+                                  </label>
+                                  <label class="btn btn-primary">
+                                    <input type="radio" name="region" id="option3" autocomplete="off" value="KR">KR
+                                  </label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-xs-6 col-md-4 col-form-label">Region</label>
-                        <div class="col-xs-12 col-sm-6 col-md-8">
-                            <select id="region" name="region" class="form-control">
-                                <option value="NA">North America</option>
-                                <option value="EUW">Europe West</option>
-                                <option value="EUN">Europe Nordic East</option>
-                                <option value="KR">Korea</option>
-                            </select>
-                        </div>
-                    </div>
-                    <br/>
-                    <div class="mx-auto text-center">
-                        <input type="submit" class="btn btn-lg btn-block btn-primary" id="search" value="GO"/>
-                    </div>
-                    -->
-                </form>
+                    </form>
+                </div>
             </div>
             <div class="row" id="opening-tables">
                 {% if best_champs %}
@@ -135,19 +115,19 @@
                             </tr>
                           </thead>
                           <tbody>
-                            {% for champ,stats in best_champs.items() %}
+                            {% for champ in best_champs %}
                                 <tr>
-                                    <td>{{ stats["role"] }}</td>
-                                    <td>{{ stats["name"] }}</td>
-                                    {% if stats["rating"] > 0.8 %}
-                                        <td class="good">{{ stats["rating"] }}</td>
+                                    <td>{{ champ["role"] }}</td>
+                                    <td>{{ champ["name"] }}</td>
+                                    {% if champ["rating"] > 0.8 %}
+                                        <td class="good">{{ champ["rating"] }}</td>
                                     {% else %}
-                                        <td class="bad">{{ stats["rating"] }}</td>
+                                        <td class="bad">{{ champ["rating"] }}</td>
                                     {% endif %}
-                                    {% if stats["wr"] >= 50 %}
-                                        <td class="good">{{ stats["wr"] }}</td>
+                                    {% if champ["wr"] >= 50 %}
+                                        <td class="good">{{ champ["wr"] }}</td>
                                     {% else %}
-                                        <td class="bad">{{ stats["wr"] }}</td>
+                                        <td class="bad">{{ champ["wr"] }}</td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}
@@ -193,19 +173,19 @@
                             </tr>
                           </thead>
                           <tbody>
-                            {% for champ,stats in best_offmeta_champs.items() %}
+                            {% for champ in best_offmeta_champs %}
                                 <tr>
-                                    <td>{{ stats["role"] }}</td>
-                                    <td>{{ stats["name"] }}</td>
-                                    {% if stats["rating"] > 0.8 %}
-                                        <td class="good">{{ stats["rating"] }}</td>
+                                    <td>{{ champ["role"] }}</td>
+                                    <td>{{ champ["name"] }}</td>
+                                    {% if champ["rating"] > 0.8 %}
+                                        <td class="good">{{ champ["rating"] }}</td>
                                     {% else %}
-                                        <td class="bad">{{ stats["rating"] }}</td>
+                                        <td class="bad">{{ champ["rating"] }}</td>
                                     {% endif %}
-                                    {% if stats["wr"] >= 50 %}
-                                        <td class="good">{{ stats["wr"] }}</td>
+                                    {% if champ["wr"] >= 50 %}
+                                        <td class="good">{{ champ["wr"] }}</td>
                                     {% else %}
-                                        <td class="bad">{{ stats["wr"] }}</td>
+                                        <td class="bad">{{ champ["wr"] }}</td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}
