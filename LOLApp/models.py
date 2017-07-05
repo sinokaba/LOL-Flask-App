@@ -17,6 +17,7 @@ class Champion(BaseModel):
 	passive = TextField()
 	enemyTips = TextField()
 	allyTips = TextField()
+	"""
 	armorPerlevel = FloatField()
 	attackDamage = FloatField()
 	manaPerLvl = FloatField()
@@ -35,6 +36,8 @@ class Champion(BaseModel):
 	mr = FloatField()
 	hpRegen = FloatField()
 	hpPerLvl = FloatField()
+	"""
+
 
 class Item(BaseModel):
 	itemId = IntegerField(unique=True)
@@ -45,17 +48,21 @@ class Item(BaseModel):
 	cost = IntegerField()
 	tags = TextField(null=True)
 	des = TextField()
+	"""
 	requiredChamp = TextField(null=True)
 	complete = BooleanField()
+	"""
+
 
 class ChampStats(BaseModel):
 	#test whether clumping up info reduces file size, such as kda into one textfield instead of 3 sperate int fields, as well as the build
+	key = TextField()
 	champId = IntegerField()
 	totalPlays = IntegerField()
 	rolePlays = IntegerField()
 	totalWins = IntegerField()
 	role = TextField()
-	roleWins = IntegerField()
+	roleWins = TextField()
 	bans = IntegerField()
 	kda = FloatField()
 	kills = IntegerField()
@@ -66,19 +73,12 @@ class ChampStats(BaseModel):
 	spells = TextField(null=True)
 	players = TextField()
 	skillOrder = TextField(null=True)
-	dpm = FloatField()
-	dtpm = FloatField()
+	keystone = TextField(null=True)
+	dpg = FloatField(null=True)
+	dmpg = FloatField(null=True)
 	matchups = TextField()
-	region = CharField()
-	rankTier = CharField()
 	runes = TextField(null=True)
-	startingItems = TextField(null=True)
-	consumeableItems = TextField(null=True)
-	earlyBehindItems = TextField(null=True)
-	earlyAheadItems = TextField(null=True)
-	coreItems = TextField(null=True)
-	offenseItems = TextField(null=True)
-	defenseItems = TextField(null=True)
+	items = TextField(null=True)
 
 	class Meta:
 		order_by = ('totalPlays',)
@@ -86,8 +86,8 @@ class ChampStats(BaseModel):
 
 class Player(BaseModel):
 	#test whether putting all scores into one field will save spaces
-	accountId = IntegerField()
-	summId = IntegerField()
+	accountId = BigIntegerField()
+	summId = BigIntegerField()
 	name = CharField()
 	region = CharField()
 	champions = TextField()
@@ -107,14 +107,22 @@ class Player(BaseModel):
 	dpm = FloatField()
 	dmgShare = FloatField()
 	playstyle = TextField()
+	numGames = IntegerField()
 
 	class Meta:
 		order_by = ('oaRating',)
 
+class MonsterStats(BaseModel):
+	monsterKey = TextField()
+	kills = IntegerField()
+	wins = IntegerField()
+	time = BigIntegerField(null=True) 
+	games = IntegerField()
+
 class GamesVisited(BaseModel):
-	matchId = IntegerField()
+	matchId = BigIntegerField()
 	region = CharField()
 
 def initialize_db():
 	database.connect()
-	database.create_tables([Champion, ChampStats, Player, Item, GamesVisited], safe=True)
+	database.create_tables([Champion, Item, ChampStats, Player, GamesVisited, MonsterStats], safe=True)
