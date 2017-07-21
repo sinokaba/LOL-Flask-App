@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - Champions Stats
+{% endblock %}
+
+{% block content %}
+	{% for champ,data in all_champs_d.items() %}
+		<p>{{ champ }}</p>
+
+	{% endfor %}
+
+{% endblock %}

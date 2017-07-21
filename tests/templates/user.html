@@ -1,54 +1,111 @@
 {% extends "layout.html" %}
 
 {% block title %}
-LOL app
+    Scryer's Analytics
 {% endblock %}
 
-{% block body %}
+{% block content %}
 
-<div style="text-align:center">
-    <h1>Win or Lose</h1>
+<div class="container">
     {% if name and region %}
-        <h1>Summoner Name: {{ name }}</h1>
-        <img src={{ profile_icon }}>
-        <h1>Region: {{ region }}</h1>
-        <h2>Level: {{ lvl }}</h2>
-        {% if league %}
-            <h2>Rank: {{ league["div_name"] }} - {{ league["tier"] }} 
-                {{ league["player"]["rank"] }} {{ league["player"]["leaguePoints"] }} LP</h2>
-            <h3>Wins: {{ league["player"]["wins"] }} | Losses: {{ league["player"]["losses"] }}</h3>
-        {% else %}
-            <h2> Rank: Unranked </h2>
-        {% endif %}
-        {% if matches %}
-            {% for match in matches %}
-                {% if loop.index <= 10 %}
-                    <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
-                    <img src = {{ match["champ"] }}>
-                    <img src = {{ match["spell1"] }} style="align:left">
-                    <img src = {{ match["spell2"] }} style="align:left">
+        <div class="media">
+            <img class="d-flex mr-3" src={{ profile_icon }} id="profileIcon" class="headerIcons" alt="Profile Icon">
+            <div class="media-body">
+                <h4 class="mt-0">{{ name }}</h4>
+                <h5>Region: {{ region }}</h5>
+                <h5>Level: {{ lvl }}</h5>
+                {% if league %}
+                    <h4 class="mt-0">Wins: {{ league["player"]["wins"] }} | Losses: {{ league["player"]["losses"] }}</h4>
+                    <h5>Rank: {{ league["div_name"] }} - {{ league["tier"] }} 
+                    {{ league["player"]["rank"] }} {{ league["player"]["leaguePoints"] }} LP</h5>
                 {% else %}
-                    <p>{{ match["kills"] }}/{{ match["deaths"] }}/{{ match["assists"] }}</p>
-                    <img src = {{ match["champ"] }}>
-                    <img src = {{ match["spell1"] }} style="align:left">
-                    <img src = {{ match["spell2"] }} style="align:left">
+                    <h5 class="mt-0">Rank: Unranked</h5>
                 {% endif %}
-            {% endfor %}
+            </div>
+            {% if league %}
+                {% if league["tier"] == "Master" and league["tier"] == "Challenger" %}
+                    <img class="d-flex ml-3" class="headerIcons" src="/static/rank_icons/base-icons/{{ league['tier'] }}.png" alt="Ranked Icon">
+                {% else %}
+                    <img class="d-flex ml-3" class="headerIcons" src="/static/rank_icons/tier-icons/{{ league['tier'] }}_{{ league['player']['rank'] }}.png" alt="Ranked Icon">
+                {% endif %}
+            {% endif %}
+          </div>
+        {% if matches %}
+        <div id="matchHistory">
+            <table class="table table-hover">
+                <tbody>
+                {% for match in matches %}
+                    {% if loop.index <= 10 %}
+                        <tr class="match {{ match['result'] }}">
+                    {% else %}
+                        <tr class="match {{ match['result'] }} moreMatches">     
+                    {% endif %}               
+                            <td>
+                                <ul class="info">
+                                    <li class="q">{{ match["queue"] }}</li> 
+                                    <li><span class="label label-info">{{ match["result"].upper() }}</span></li>
+                                    <li class="duration">{{ match["gameDuration"]//60 }}:{{ match["gameDuration"]%60 }}</li>
+                                    <li class="date">{{ match["gameCreation"] }}</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <div class="row">
+                                    <div class="col-sm-8 champIcon">
+                                        <img src={{ match["participants"][match["place"]]["champ_img"] }}>
+                                    </div>
+                                    <div class="col-sm-4 spells">
+                                        <img class="spellIcon" src={{ match["participants"][match["place"]]["spell1_img"] }}>
+                                        <img class="spellIcon" src={{ match["participants"][match["place"]]["spell2_img"] }}>
+                                    </div>      
+                                </div>  
+                            </td>
+                            <td class="acc">
+                                <img class="keystone" src={{ match["participants"][match["place"]]["keystone_img"] }}>
+                                <img class="trinket" src={{ match["participants"][match["place"]]["item6_img"] }}>
+                            </td>
+                            <td>
+                                <div class="items row">
+                                    <img src={{ match["participants"][match["place"]]["item0_img"] }}>
+                                    <img src={{ match["participants"][match["place"]]["item1_img"] }}>
+                                    <img src={{ match["participants"][match["place"]]["item2_img"] }}>
+                                </div>
+                                <div class="items row">
+                                    <img src={{ match["participants"][match["place"]]["item3_img"] }}>
+                                    <img src={{ match["participants"][match["place"]]["item4_img"] }}>
+                                    <img src={{ match["participants"][match["place"]]["item5_img"] }}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="row">
+                                    {{ match["participants"][match["place"]]["stats"]["kills"] }} / 
+                                    {{ match["participants"][match["place"]]["stats"]["deaths"] }} / 
+                                    {{ match["participants"][match["place"]]["stats"]["assists"] }}
+                                </div>
+                                <div class="row">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                </div>
+                            </td>
+                        </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <br>
             <button type="submit" id="more">Show More</button>
-        {% else %}
-            <h2>Summoner inactive for too long. No recent matches available</h2>
-        {% endif %}
-        <br />
-        {% if icon %}
-            <img src={{ icon }}>
-        {% endif %}
+            {% else %}
+                <h2>No recent ranked matches discovered.</h2>
+            {% endif %}
+            <br />
+            {% if icon %}
+                <img src={{ icon }}>
+            {% endif %}
 
-    {% else %}
-        <h1>Error! Summoner {{ name }} not found</h1>
-    
-    {% endif %}
+        {% else %}
+            <h1>Error! Summoner {{ name }} not found</h1>
+        
+        {% endif %}
+        </div>
     <br />
-    <a href="/">Back</a>
+    <a href="{{ url_for('index') }}">Back</a>
 
 </div>
 {% endblock %}
