@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - Team Stats
+{% endblock %}
+
+{% block content %}
+	{% for team in all_teams %}
+		<p>{{ team.teamId }}</p>
+		<p>Winrate: {{ team.wins/total_games }}</p>
+		<p>Remakes: {{ team.numRemakes/(total_games - team.numRemakes) }}</p>
+	{% endfor %}
+	{% for monster in monsters %}
+		<h5>{{ monster.monsterKey }}: games = {{ monster.games }} wr: - {{ monster.wins/monster.games }} kpg: {{ monster.kills/monster.games }}</h5>
+		{% if monster.subtypeData %}
+			<p>{{ monster.subtypeData }}</p>
+		{% endif %}
+	{% endfor %}
+{% endblock %}

@@ -1,0 +1,423 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - {{ region }}/{{ name }}
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron border-top-0" style="  background-image: url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ splash }}_0.jpg');">
+      	<div class="row">
+      		<div id="champ-card" class="col-2">
+				<div class="card" style="width:10rem" id="champ-main-card">
+		            <img class="card-img-top" src="http://ddragon.leagueoflegends.com/cdn/7.12.1/img/champion/{{ champ_basic.image }}" alt="{{ champ_basic.image }}">
+			    </div>
+		    </div>
+		    <div id="champ-name" class="col-3">
+		    	<div class="row">
+		       		<h1 class="display-4 banner-text" style="font-weight:400">{{ name }}</h1>
+		       	</div>
+		    	<div class="row rating-cont">
+		       		<h3 class="display-5 banner-text" style="font-weight:600">Rating: <span class="rating badge badge-default">{{ "%0.2f" | format(total_rating/total_plays) }}</span></h3>
+		       	</div>
+		       	<div class="row">
+                    <div class="card-block early-game-ratings">
+                    	{% if champ_basic.statsRanking["early"] > 7 %}
+							<span class="badge badge-success">Strong early game</span>
+						{% elif champ_basic.statsRanking["early"] > 5 %}
+							<span class="badge badge-info">Good early game</span>
+						{% elif champ_basic.statsRanking["early"] > 4 %}
+							<span class="badge badge-warning">Average early game</span>
+						{% else %}
+							<span class="badge badge-danger">Weak early game</span>
+						{% endif %}
+                      	{% if champ_basic.statsRanking["late"]|float > 10 %}
+							<span class="badge badge-success">Strong late game</span>
+						{% elif champ_basic.statsRanking["late"]|float > 7 %}
+							<span class="badge badge-info">Good late game</span>
+						{% elif champ_basic.statsRanking["late"]|float > 5.5 %}
+							<span class="badge badge-warning">Average late game</span>
+						{% else %}
+							<span class="badge badge-danger">Weak late game</span>
+						{% endif %}
+                    </div>
+		       	</div>
+		    </div>
+		</div>
+		<div class="row champ-des">
+			<div class="col">
+		    	<div class="input-group">
+					<form class="form-inline my-2 my-lg-0" id="additional-champ">
+			        	<div class="input-group">
+							<button type="button" class="btn btn-primary" id="compare">Compare</button>
+							<button type="submit" class="btn btn-success hidden" id="add">Add >></button>
+							<button type="button" class="btn btn-danger hidden" id="remove">Remove</button>
+					        <input class="form-control mr-sm-2 invisible" type="text" id="add-champ-input" name="additionalChamp" list="datalist" maxlength="16" placeholder="Champion name" autocomplete="off">
+					        <datalist id="datalist"></datalist>
+						</div>
+		            </form>
+				</div>
+			</div>
+      	</div>
+	</div>
+    <div class="container overall-stats border-0-top">
+    	<div class="row">
+	    	<div class="col" style="border-right: .7rem solid #4285F4">
+	    		<div class="row">
+					<div class="main-chart">
+					   <embed type="image/svg+xml" src= {{ overall_stats|safe }} />
+					</div>
+				</div>
+			</div>
+
+	    	<div class="col">
+	    		<div class="row">
+					<div class="main-chart">
+					   <embed type="image/svg+xml" src= {{ overall_wr|safe }} />
+					</div>
+				</div>
+	    	</div>
+	    	<div class="col">
+	    		<div class="row">
+					<div class="main-chart">
+					   <embed type="image/svg+xml" src= {{ overall_pr|safe }} />
+					</div>
+				</div>  	
+	    	</div>
+	    	<div class="col">
+	    		<div class="row">
+					<div class="main-chart">
+					   <embed type="image/svg+xml" src= {{ overall_br|safe }} />
+					</div>
+				</div>	
+	    	</div>
+	    </div>
+    </div>
+	   <!--/row-->
+	<hr />
+
+	<div class="container" style="text-align:center;">
+        <div class="card text-center">
+              	<div class="card-header">
+                	<ul class="nav nav-tabs card-header-tabs">
+                		{% if most_common_roles %}
+             				{% for champ_role in most_common_roles %}
+             					{% if loop.index == 1 %}
+			                  		<li class="nav-item role-tab" style="width:{{ 100/most_common_roles|length }}%">
+			                   			<a class="nav-link active" href="#role{{ loop.index }}" data-toggle="tab">{{ champ_role.role }}
+			                    			<img class="role-icon" src="/static/imgs/lane_icons/{{ champ_role.role }}.png" title={{ role }}>
+			                    		</a>
+			                  		</li>
+			                	{% else %}
+			                  		<li class="nav-item role-tab" style="width:{{ 100/most_common_roles|length }}%">
+			                    		<a class="nav-link" href="#role{{ loop.index }}" data-toggle="tab">{{ champ_role.role }}
+				                    		<img class="role-icon" src="/static/imgs/lane_icons/{{ champ_role.role }}.png" title={{ role }}>
+			                    		</a>
+			                  		</li>
+			                	{% endif %}
+		                	{% endfor %}
+	                	{% endif %}
+                	</ul>
+              	</div>
+              	<div class="card-block">
+		            <div class="tab-content">
+			    		{% if most_common_roles %}
+				    		{% for cur_champ in most_common_roles %}
+				    			{% if loop.index == 1 %}
+						        	<div class="tab-pane active" id="role{{ loop.index }}">
+						        {% else %}
+						        	<div class="tab-pane" id="role{{ loop.index }}">
+						        {% endif %}
+							    		<div class="row">
+					        				<div class="col" style="text-align: left">
+					                            <div class="row text-center">
+					                                <h4>Stats</h4>
+					                            </div>
+					        					<div class="row">
+					        						<div class="col-md-3">
+					                					<p>Role winrate</p>
+					        						</div>
+					        						<div class="col-md-8">
+					            						<div class="progress">
+					            							{% set winrate = '%0.1f'| format((cur_champ.roleTotalWins/cur_champ.roleTotalPlays)*100) %}
+					                						<div class="progress-bar" role="progressbar" style="width: {{ winrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ winrate }}%</div>
+					                					</div>
+					            					</div>
+					        					</div>
+					        					<div class="row">
+					        						<div class="col-md-3">
+					                					<p>Role playrate</p>
+					        						</div>
+					        						<div class="col-md-8">
+					                					<div class="progress">
+					                					    {% set playrate = '%0.1f'| format((cur_champ.roleTotalPlays/total_plays)*100) %}
+					                						<div class="progress-bar" role="progressbar" style="width: {{ playrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ playrate }}%</div>
+					                							</div>
+					            						</div>
+					        					</div>
+						                		<div class="row">
+					        						<div class="col-md-4">
+					                					<p>Role rating</p>
+					        						</div>
+					        						<div class="col-md-8">
+					            					    <p class="rating">{{ '%0.2f'| format(cur_champ.roleTotalRating/cur_champ.roleTotalPlays) }}</p>
+					            					</div>
+					            				</div>
+						                		<div class="row">
+					        						<div class="col-md-4">
+					                					<p>Avg Damage/Gold</p>
+					        						</div>
+					        						<div class="col-md-8">
+					            					    <p class="rating">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["dpg"]/cur_champ.roleTotalPlays) }}</p>
+					            					</div>
+					            				</div>
+						               			<div class="row">
+					        						<div class="col-md-4">
+					               						<p>Avg Damage Mitigated/Gold</p>
+					        						</div>
+					       							<div class="col-md-8">
+					            					    <p class="rating">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["dmpg"]/cur_champ.roleTotalPlays) }}</p>
+					            					</div>
+					            				</div>
+						               			<div class="row">
+					        						<div class="col-md-4">
+					               						<p>Avg Vision Rating</p>
+					        						</div>
+					       							<div class="col-md-8">
+					            					    <p class="rating">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["visScore"]/cur_champ.roleTotalPlays) }}</p>
+					            					</div>
+					            				</div>
+						               			<div class="row">
+					        						<div class="col-md-4">
+					               						<p>Avg Objectives Rating</p>
+					        						</div>
+					       							<div class="col-md-8">
+					            					    <p class="rating">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["objScore"]/cur_champ.roleTotalPlays) }}</p>
+					            					</div>
+					            				</div>
+					        				</div>
+				                            {% if cur_champ.addons %}
+			                        			<div class="col">
+						                            <div class="row text-center">
+						                                <h4>Guide</h4>
+						                            </div>
+						        				    <div class="row">
+				            							<div class="col-md-3">
+				                						    <h6>Best Runes</h6>
+				            						 	</div>
+			            						 		<div class="col-md-9">
+			            						 			</p>
+			                							   	{% for rune_type,info in cur_champ.addons.runes.items() %}
+			                							   		{% for rune,data in info.items() %}
+				                						    	    {{ rune }}
+				                						    	{% endfor %}
+			                						    	{% endfor %}
+			                						    	</p>
+			            						 		</div>
+			            							</div>
+			            							<div class="row">
+			            							    <div class="col">
+			            							        <h6>Best Keystone</h6>
+			            							    </div>
+			            					            <div class="col">
+			            					            	<h6>Summoner Spells</h6>
+			            					            </div>
+			            						    </div>
+			            							<div class="row">
+			            							    <div class="col">
+			            							       	{% if cur_champ.addons.keystone|length > 0 %}
+							            						{% for ks,info in cur_champ.addons.keystone.items() %}
+							                						<img src="http://ddragon.leagueoflegends.com/cdn/7.11.1/img/mastery/{{ ks }}.png" title="{{ info['name'] }}" />
+							                					{% endfor %}
+							                				{% endif %}
+			            							    </div>
+			            							    <div class="col">
+						            						{% for spell,info in cur_champ.addons.spells.items() %}
+						                					    <img src="http://ddragon.leagueoflegends.com/cdn/7.11.1/img/spell/{{ info['info']['image'] }}" title="{{ info['name'] }}" />
+						                					{% endfor %}
+			            						        </div>
+			            					    	</div>
+			            					    	<div class="skill-order-container">
+				            						    <div class="row" style="text-align:center">
+				            						   		<div class="col">
+				            						   			<h6>Best Skillorder</h6>
+				            						   		</div>
+				            						   	</div>
+				            					    	<div class="row">
+				            					    		<div class="col">
+																<table class="table table-responsive table-sm">
+																  <tbody>
+																  	<tr>
+																  		<td>Q</td>
+								            						    {% for lvl,skills_list in cur_champ.addons.skillOrder.items() %}
+								            						   		{% if 1 in skills_list %}
+																		    	<td>{{ lvl }}</td>
+																		    {% else %}
+																		    	<td> </td>
+																		    {% endif %}
+																	    {% endfor %}
+																  	</tr>
+																  	<tr>
+																  		<td>W</td>
+								           						    	{% for lvl,skills_list in cur_champ.addons.skillOrder.items() %}
+								           						    		{% if 2 in skills_list %}
+																		    	<td>{{ lvl }}</td>
+																		    {% else %}
+																		    	<td> </td>
+																		    {% endif %}
+																	    {% endfor %}
+																  	</tr>
+																  	<tr>
+																  		<td>E</td>
+								            					    	{% for lvl,skills_list in cur_champ.addons.skillOrder.items() %}
+								            					    		{% if 3 in skills_list %}
+																		    	<td>{{ lvl }}</td>
+																		    {% else %}
+																		    	<td> </td>
+																		    {% endif %}
+																	    {% endfor %}						
+																	  	</tr>
+																	  <tr>
+																 		<td>R</td>
+								            					    	{% for lvl,skills_list in cur_champ.addons.skillOrder.items() %}
+								            					    		{% if 4 in skills_list %}
+																		    	<td>{{ lvl }}</td>
+																		    {% else %}
+																		    	<td> </td>
+																		    {% endif %}
+																	    {% endfor %}			
+																  	</tr>
+																  </tbody>
+																</table>	
+															</div>
+				            						    </div>
+			            						    </div>
+			            						    <div class="items-container">
+				            						   	<div class="row">
+				            						   		<div class="col" style="text-align:center">
+				            						   			<h6>Best Items</h6>
+				            						   		</div>
+				            					    	</div>
+				            					    	<div class="row">
+				            					    		<div class="col">
+																<table class="table table-responsive table-sm">
+																  <tbody>
+							           						    	{% for item_categ,items_list in cur_champ.addons.items.items() %}
+								           						    	<tr>
+																		   	<td>{{ item_categ }}</td>
+																		   	{% for item,data in items_list.items() %}
+																		   		<td><img src="http://ddragon.leagueoflegends.com/cdn/7.12.1/img/item/{{item }}.png" class="champ-items" title="{{ data['info']['name'] }}"></td>
+																		    {% endfor %}
+																		</tr>
+																    {% endfor %}
+																	</tbody>
+																</table>	
+															</div>
+				            				    		</div>
+			            				    		</div>
+			        						    </div>
+			        						{% endif %}
+		        						</div>
+									<div class="card-group">
+										{% for rank,champ_rank in rank_stats[cur_champ.role].items() %}
+											<div class="card">
+											    <img class="card-img-top" src="/static/imgs/rank_icons/base-icons/{{ champ_rank.leagueTier }}.png" style="width:180px" alt="Card image cap">
+											    <div class="card-block">
+										     		<h4 class="card-title">{{ rank }} Stats</h4>
+											      	{% if this_patch in champ_rank.patchStats %}
+													    <div class="row">
+											                <div class="col-md-3">
+											                    Winrate:
+											                </div>
+												            <div class="col-md-9">
+												           		<div class="progress">
+																	{% set winrate = '%0.1f'| format((champ_rank.patchStats[this_patch]["wins"]/champ_rank.patchStats[this_patch]["plays"])*100) %}
+														            <div class="progress-bar" role="progressbar" style="width: {{ winrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ winrate }}%</div>
+												           		</div>
+												            </div>
+											       		</div>
+												        <div class="row">
+										                    <div class="col-md-3">
+										                        Playrate:
+										                    </div>
+										                    <div class="col-md-9">
+										                        <div class="progress">
+											                		{% set playrate = '%0.1f'| format((5/10)*100) %}
+											                		<div class="
+											                		progress-bar" role="progressbar" style="width: {{ playrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ playrate }}%</div>
+										            			</div>
+										                    </div>
+												        </div>
+												        <div class="row">
+										                    <div class="col">
+										                        Kills: {{ '%0.2f'| format(champ_rank.kills/20) }}
+										                    </div>
+										                    <div class="col">
+										                        Deaths: {{ '%0.2f'| format(champ_rank.deaths/20) }}
+										                    </div>
+										                    <div class="col">
+										                        Assists: {{ '%0.2f'| format(champ_rank.assists/20) }}
+										                    </div>
+												        </div>					 
+												    {% endif %}       
+									    		</div>
+											    <div class="card-footer">
+											      <small class="text-muted">Last updated 3 mins ago</small>
+											    </div>
+											  </div>
+									    {% endfor %}					
+									</div>
+
+								   <hr />
+
+									<div class="card text-center">
+									  <div class="card-header">
+									    {{ cur_champ.role }}
+									  </div>
+									  <div class="card-block">
+									    <h4 class="card-title">{{ name }} Matchups</h4>
+									    {% if cur_champ.addons %}
+									    	{% for enemy_champ,stats in cur_champ.addons.matchups.items() %}
+									    		{% if loop.index <= 5 %}
+									    			<div class="row">
+									    				<div class="col">
+									    					<p class="card-text">{{ enemy_champ }}</p>
+									    				</div>
+									    				<div class="col">
+									    					<p class="card-text">{{ stats["wins_against"] }} / {{ stats["used_against"] }}</p>
+									    				</div>
+									    				<div class="col">
+									    					<p class="card-text">{{ stats["perf_against"]/stats["used_against"] }}</p>
+									    				</div>									    				
+									    			</div>
+									    		{% endif %}
+									    	{% endfor %}
+									    {% endif %}
+									  </div>
+									  <div class="card-footer text-muted">
+									    2 days ago
+									  </div>
+									</div>
+
+									<hr />
+									<div class="card text-center">
+										<div class="card-header">
+										    Best {{ cur_champ.role }} lane {{ name }} Players
+										</div>
+										<div class="card-block">
+										    {% for player in cur_champ.player_details %}
+										    	<p class="card-text">{{ player.accountId }} - {{ player.performance/player.plays }}</p>
+										    {% endfor %}
+										</div>
+										<div class="card-footer text-muted">
+											2 days ago
+										</div>
+									</div>
+								</div>
+	      	   				{% endfor %}
+	    				{% endif %}
+            		</div>
+              	</div>
+            </div>
+		</div>
+	</div>
+{% endblock %}

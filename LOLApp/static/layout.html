@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+      <script src="https://use.fontawesome.com/5a5fd64e5c.js"></script>
+    <!-- Optional theme -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/offCanvas.css') }}">
+    <link rel="shortcut icon" type="image/png" href="/static/imgs/orb-icon-16.png" class="rounded-circle"/>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <title>{% block title %}{% endblock %}</title>
+  </head>
+	<body>
+        <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+         <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse" data-target="#navLinks" aria-controls="navLinks" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">
+            <img src="/static/imgs/orb.png" width="30" height="30" alt="scrying-orb-icon" class="rounded-circle">
+            Scryer's Analytics
+          </a>
+          <div class="collapse navbar-collapse" id="navLinks">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('teams_stats') }}">Team Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('all_champs_stats') }}">Champ Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
+              </li>
+            </ul>
+            <div class="row">
+                <div class="col" style="margin-right: -1.5rem;">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <p class=flashes  id="invalidName">{{ message }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="col">
+                    <form class="form-inline" action="{{ url_for('get_data') }}" method="POST">
+                      <div class="input-group">
+                        <input class="form-control mr-sm-2" type="text" name="name" id="nav-search" list="datalist" maxlength="16" placeholder="Champ or Player" autocomplete="off" style="width: 15rem;">
+                        <datalist id="datalist"></datalist>
+                        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" id="search-button">Search</button>
+                      </div>
+                    </form>
+                </div>
+            </div>
+        </nav>
+		{% block content %}
+		{% endblock %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/xregexp.js') }}"></script>
+  </body>
+</html>

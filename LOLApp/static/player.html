@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - {{ champ }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ name }}</h1>
+
+<h2>{{ region }}</h1>
+
+<h3>{{ rank_data["player"]["wins"] }}/{{ rank_data["player"]["losses"] + rank_data["player"]["wins"] }} ({{ wr }}) </h3>
+
+<h4>{{ rank_data["tier"] }} - {{ rank_data["div_name"] }}</h4>
+{% endblock %}
