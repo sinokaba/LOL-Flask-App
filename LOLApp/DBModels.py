@@ -1,11 +1,12 @@
 from peewee import *
-from playhouse.postgres_ext import PostgresqlExtDatabase
 
 """
 #app.config["SQLALCHEMY_DATABSE_URI"] = "postgresql://postgres:1WILLchange!@localhost/mydatabase"
 postgress user: postgres, password: 1WILLchange
 """
-postgres_db = PostgresqlDatabase("FlaskScryer", user="postgres", password="1WILLchange!")
+db_name = "FlaskScryer"
+#db_name = "Scryer"
+postgres_db = PostgresqlDatabase(db_name, user="postgres", password="1WILLchange!")
 
 """
 why not remove the players table and just store the highest rated players using flask session, whenever a player is searched if that player's rating is higher then replace
@@ -32,6 +33,10 @@ class ChampBase(BaseModel):
 	champId = IntegerField(unique=True)
 	#perhaps take out everything below this point as this is static data and can make as amny calls as needed
 	#or delete this entire table itself
+	tag1 = CharField()
+	tag2 = CharField(null=True)
+	role1 = CharField(null=True)
+	role2 = CharField(null=True)
 	name = CharField()
 	image = CharField()
 	statsRanking = BlobField()
@@ -49,7 +54,22 @@ class ItemBase(BaseModel):
 	tags = BlobField(null=True)
 	des = TextField()
 
+class SpellBase(BaseModel):
+	spellId = IntegerField(unique=True)
+	name = CharField()
+	image = CharField()
+	des = TextField()
 
+class RuneBase(BaseModel):
+	runeId = IntegerField(unique=True)
+	name = CharField()
+	image = CharField()
+	des = TextField()
+
+class MasteryBase(BaseModel):
+	masteryId = IntegerField(unique=True)
+	name = CharField()
+	des = TextField()
 #all the tables which store the aggragated stats gathered by the crawler
 
 #Pretty much all stats tables contain this info, so decided to make it its own table and have other tables refer to it. normalization
@@ -66,20 +86,48 @@ class ChampAddons(BaseModel):
 	runes = BlobField(null=True)
 	matchups = BlobField()
 
-class ChampRoleOverallStats(BaseModel):
+class ChampOverallStats(BaseModel):
+	totalRatingByPatch = BlobField()
+	totalBansByPatch = BlobField()
+	totalPlaysByPatch = BlobField()	
+	totalWinsByPatch = BlobField()
+	totalRating = FloatField()
+	totalWins = IntegerField()
+	totalBans = IntegerField()
+	totalPlays = IntegerField()
+	champId = IntegerField()
+	region = CharField()
+
+#new
+class ChampOverallStatsByRole(BaseModel):
 	role = CharField()
 	roleTotalPlays = IntegerField()
 	roleTotalWins = IntegerField()
 	roleCCDealt = IntegerField()
 	roleTotalRating = FloatField()
-	totalBansByPatch = BlobField()
-	totalPlaysByPatch = BlobField()
-	addons = ForeignKeyField(ChampAddons, related_name="base", null=True)
+	laning = FloatField()
+	addons = ForeignKeyField(ChampAddons, related_name="stats_by_role", null=True)
+
+#new
+class ChampStatsByRank(BaseModel):
+	champId = IntegerField()
+	baseInfo = ForeignKeyField(StatsBase, related_name="stats_by_league")
+	overallStats = ForeignKeyField(ChampOverallStatsByRole, related_name="stats_by_league")
+	gameStats = BlobField(null=True)	#gameStats includes, dpg,dmpg, visScore, objScore
+	patchStats = BlobField()	#patchstats containts rating, wins, plays. should be blob field?
+	kills = IntegerField()
+	deaths = IntegerField()
+	assists = IntegerField()
+	cspm = IntegerField()
+	gpm = IntegerField()
+	resultByTime = BlobField()	#result by time stores winrate by game length
 
 class PlayerBasic(BaseModel):
 	accountId = BigIntegerField()
 	region = CharField()
 	name = CharField()
+	rank = CharField(null=True)
+	summonerId = BigIntegerField()
 
 class ChampBasic(BaseModel):
 	champId = IntegerField()
@@ -96,23 +144,16 @@ class PlayerRankStats(BaseModel):
 	champInfo = ForeignKeyField(ChampBasic, related_name="players")
 	class Meta:
 		order_by = ('-performance','plays')
-
-class ChampRankStats(BaseModel):
-	champId = IntegerField()
-	baseInfo = ForeignKeyField(StatsBase, related_name="champ_stats")
-	overallStats = ForeignKeyField(ChampRoleOverallStats, related_name="stats_by_rank")
-	gameStats = BlobField(null=True)	#gameStats includes, dpg,dmpg, visScore, objScore
-	patchStats = BlobField()	#patchstats containts rating, wins, plays. should be blob field?
-	kills = IntegerField()
-	deaths = IntegerField()
-	assists = IntegerField()
-	cspm = IntegerField()
-	gpm = IntegerField()
-	resultByTime = BlobField()	#result by time stores winrate by game length
-
+		
 class TeamBase(BaseModel):
 	baseInfo = ForeignKeyField(StatsBase, related_name="teams")
 	teamId = IntegerField()	#100 = blue, 200 = red
+
+class TeamStats(BaseModel):
+	teamInfo = ForeignKeyField(TeamBase, related_name="team_stats")
+	gameLength = FloatField(null=True)
+	numRemakes = IntegerField(null=True)
+	teamGameStats = BlobField() #firstTower, firstDragon, firstBaron, firstBlood, firstHerald, firstInhib
 
 class MonsterStats(BaseModel):
 	monsterType = CharField()
@@ -128,21 +169,19 @@ class GamesVisited(BaseModel):
 	matchId = BigIntegerField()
 	patch = CharField(null=True)
 
-class TeamStats(BaseModel):
-	teamInfo = ForeignKeyField(TeamBase, related_name="team_stats")
-	gameLength = IntegerField(null=True)
-	numRemakes = IntegerField(null=True)
-	teamGameStats = BlobField() #firstTower, firstDragon, firstBaron, firstBlood, firstHerald, firstInhib
-
 def initialize_db():
 	postgres_db.connect()
 	postgres_db.create_tables([
 		ChampBase, 
 		ItemBase,
+		SpellBase,
+		MasteryBase,
+		RuneBase,
 		StatsBase,
-		ChampRoleOverallStats, 
+		ChampOverallStats,
+		ChampOverallStatsByRole,
 		ChampAddons,  
-		ChampRankStats, 
+		ChampStatsByRank,
 		TeamStats,
 		TeamBase, 
 		PlayerBasic,
