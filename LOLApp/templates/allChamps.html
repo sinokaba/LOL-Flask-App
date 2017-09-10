@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - Champions Stats
+{% endblock %}
+
+{% block content %}
+	
+	{% for region,champs in all_champs_data.items() %}
+		{% for champ in champs %}
+			<p>{{ champ.champId }} - {{ champ.region }} - {{ champ.totalRating }}</p>
+		{% endfor %}
+	{% endfor %}
+	<script type="text/javascript">
+		$("#champs").addClass("active")
+	</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - Team Stats
+{% endblock %}
+
+{% block content %}
+
+	 <div class="container-fluid">
+	 	{% for rank_tier in rank_tier_key %}
+		    <div class="row">
+		    {% for team,stats in team_stats[rank_tier]["teams"].items() %}
+			    <div class="col-sm-6">
+			        <div class="chart-wrapper">
+			          	<div class="chart-title">
+			          		{% if team == 100 %}
+			            		Blue
+			            	{% else %}
+			            		Red
+			            	{% endif %}
+			          	</div>
+				        <div class="chart-stage">
+				            <h5>WR: {{ stats["wins"]/team_stats[rank_tier]["games"] }}</h5>
+				        </div>
+				        <div class="chart-notes">
+				        	{% if rank_tier == "diamondPlus" %}
+				        		Diamond Above Team Stats
+				        	{% elif rank_tier == "silverMinus" %}
+				        		Silver Below Team Stats
+				        	{% else %}
+				            	{{ rank_tier }} Team Stats
+				            {% endif %}
+				        </div>
+			        </div>
+			    </div>
+			    {% endfor %}
+			</div>
+		{% endfor %}
+
+	    <div class="row">
+	      <div class="col-sm-6 col-md-4">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Baron
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-4">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Rift Herald
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-4">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Elder Drake
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-3">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Fire Dragon
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-3">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Earth Dragon
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-3">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Water Dragon
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-sm-6 col-md-3">
+	        <div class="chart-wrapper">
+	          <div class="chart-title">
+	            Cell Title
+	          </div>
+	          <div class="chart-stage">
+	            <img data-src="holder.js/100%x120/white">
+	          </div>
+	          <div class="chart-notes">
+	            Air Dragon
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+
+	  </div>
+	<script type="text/javascript">
+		$("#team").addClass("active")
+	</script>
+{% endblock %}

@@ -1,0 +1,756 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - {{ summoner_data.name }} Stats
+{% endblock %}
+
+{% block content %}
+    <script type="text/javascript">
+        $("#nav-regions option[value={{ summoner_data.region|safe }}]").attr('selected', 'selected')
+	</script>
+    {% if matches_data %}
+        {% set mh, info, scores, highlight_game = matches_data[0], matches_data[1], matches_data[2], matches_data[3] %}
+	    <div class="container" id="player-wrapper" style="background-image: url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ info['played'][0]['splash'] }}_0.jpg')">
+	        <div class="row justify-content-md-center" style="margin-top:1rem" id="player-profile">
+	            <div class="col col-lg-3">
+	                <div class="profile-main-text text-center">
+	                    <h3 class="profile-text">Rating(W): <span class="player-rating">{{ "%0.2f" | format((scores["rating"]/info["num_games"]["counted"])*info["champ_pool_weighting"]) }}</span></h3>
+	                </div>
+	            </div>
+	            <div class="col-12 col-md-auto profile-icon-container">
+	                <img style="border-radius:50%;width:131px" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/profileicon/{{ summoner_data.profile_icon }}.png" id="profileIcon" class="headerIcons" alt="Profile Icon">
+	                {% if league_data %}
+		                <img style="width: 200px;position:absolute; padding-top:-30px; top:-78px;
+		                left:-20px;"src="/static/imgs/rank_icons/rank-borders/{{ league_data['tier'] }}.png">           
+		            {% endif %}
+	            </div>
+	            <div class="col col-lg-3">
+	                <h3 class="profile-main-text text-center profile-text">Rating(UNW): <span class="player-rating">{{ "%0.2f" | format(scores["unweighted_rating"]/info["num_games"]["counted"]) }}</span></h3>
+	            </div> 
+	        </div>
+	        <div class="row" id="profile-bottom-info">
+	            <div class="col text-center">
+			    	<div class="input-group">
+       					<button type="submit" data-toggle="tooltip" data-placement="top" data-html="true" title="<em>Like this player.</em>" class="btn btn-danger" id="rate-player"><i class="fa fa-heart" aria-hidden="true"></i></button>
+						<form class="form-inline my-2 my-lg-0" id="additional-player">
+				        	<div class="input-group">
+								<button type="button" class="btn btn-primary compare" id="compare-player">Compare</button>
+								<button type="submit" class="btn btn-success hidden" id="add-player">Add >></button>
+								<button type="button" class="btn btn-danger hidden" id="remove-player">Remove</button>
+						        <input class="form-control mr-sm-2 invisible" type="text" id="add-player-input" name="additionalPlayer" maxlength="16" placeholder="{{ summoner_data.region }} Summoner" autocomplete="on">
+							</div>
+			            </form>
+					</div>
+	            </div>
+	            <div class="col-5 text-center">
+	                <h2 class="profile-text">{{ summoner_data.name }} - {{ summoner_data.region }}</h2>
+	            </div>
+	            <div class="col text-center">
+                	{% for tag in info["tags"] %}
+               			<span data-toggle="tooltip" data-placement="bottom" data-html="true" title="<b>{{ tag }}</b>: {{ player_tags_des[tag] }}" class="badge badge-pill badge-info">{{ tag }}</span>   
+                	{% endfor %}               
+						<button type="submit" data-toggle="tooltip" data-placement="top" data-html="true" title="<b>Claim Account.</b>" class="btn btn-primary" id="claim-account"><i class="fa fa-user-plus" aria-hidden="true"></i></button>
+	            </div>
+	        </div>
+	    </div>
+	            
+	        <div id="player-main-content">          
+	            <div class="container">
+	                <div class="row">
+	                    <div class="col-3">
+	                        <div class="card">
+	                            <div class="card-block">
+	                                <h4 class="card-title">Rank</h4>
+	                                {% if league_data %}
+	                                    <h6 class="card-text">{{ league_data["tier"] }} 
+	                                    {{ league_data["rank"] }} - {{ league_data["leaguePoints"] }} LP</h6>
+	                                    <h6 class="card-text">{{ league_data["wins"] }} Wins | {{ league_data["losses"] }} Losses</h6>
+	                                    <h6 class="card-text">Winrate: <span class="player-wr">{{ winrate }}</span>%</h6>                                    
+	                                {% else %}
+	                                    <h6 class="card-text">Rank: Unranked</h6>
+	                                    <h6 class="card-text">{{ info["total_wins"] }} Wins | {{ info["num_games"]["counted"]-info["total_wins"] }} Losses</h6>
+	                                    <h6 class="card-text">Winrate: <span class="player-wr">{{ "%0.2f" | format((info["total_wins"]/info["num_games"]["counted"])*100)  }}</span>%</h6>                                       
+	                                {% endif %} 
+	                            </div>
+	                            <div class="card-footer">
+	                              <small class="text-muted">Last updated 3 mins ago</small>
+	                            </div>                         
+	                        </div>                    
+	                    </div>
+	                    <div class="col-6">
+	                        <div class="card">
+	                            <div class="card-block">
+	                                <h4 class="card-title">Overall Stats</h4>
+	                                <div class="row">
+	                                    <div class="col">
+	                                        <h6 class="card-text">Objective Score: {{ "%0.2f" | format(scores["objective_score"]/info["num_games"]["counted"]) }}</h6>
+	                                        <h6 class="card-text">Vision Score: {{ "%0.2f" | format(scores["vision_score"]/info["num_games"]["counted"]) }}</h6><h6 class="card-text">Laning Score: {{ "%0.2f" | format(scores["laning"]/info["num_games"]["counted"]) }}</h6>
+	                                        
+	                                    </div>
+	                                    <div class="col">
+	                                        <h6 class="card-text">KP: {{ "%0.2f" | format((scores["kp"]/info["num_games"]["counted"])*100) }}%</h6>
+	                                        <h6 class="card-text">DMG Share: {{ "%0.2f" | format((scores["dmg_share"]/info["num_games"]["counted"])*100) }}%</h6>          
+	                    					<h6 class="card-text">KDA: {{ "%0.2f" | format(scores["kda"]["kills"]/info["num_games"]["counted"]) }}</h6>
+	                                    </div>
+	                                </div>
+	                            </div>
+	                            <div class="card-footer">
+	                              <small class="text-muted">Over {{ info["num_games"]["total"] }} games</small>
+	                            </div>                              
+	                        </div>
+	                    </div>
+	                    <div class="col-3">
+	                        <div class="card">
+	                            <div class="card-block">
+	                                <h4 class="card-title">Per minute stats</h4>
+	                                <div class="row">
+	                                    <div class="col">
+	                                        <h6 class="card-text">CS: {{ "%0.1f" | format(scores["cspm"]/info["num_games"]["counted"]) }}</h6>
+	                                        <h6 class="card-text">XP: {{ "%0.1f" | format(scores["xppm"]/info["num_games"]["counted"]) }}</h6>
+	                                        <h6 class="card-text">Gold: {{ "%0.1f" | format(scores["gpm"]/info["num_games"]["counted"]) }}</h6>
+	                                    </div>
+	                                    <div class="col">
+	                                        <h6 class="card-text">Dmg: {{ "%0.1f" | format(scores["dpm"]/info["num_games"]["counted"]) }}</h6>
+	                                        <h6 class="card-text">Wards: {{ "%0.1f" | format(scores["wpm"]/info["num_games"]["counted"]) }}</h6>
+	                                        <h6 class="card-text">CC: {{ "%0.1f" | format(scores["ccpm"]/info["num_games"]["counted"]) }}</h6>
+	                                    </div>
+	                                </div>
+	                            </div>
+	                            <div class="card-footer">
+	                              <small class="text-muted">Over {{ info["num_games"]["total"] }} games</small>
+	                            </div>  
+	                        </div>
+	                    </div>
+	                </div>
+	            </div>
+	            
+	            <hr />
+	            
+	            <div class="container">
+	            	{% if highlight_game %}
+	            		<div class="row">
+	            			<h3>Highlight game</h3>
+	            		</div>
+	            		<div class="row highlight-game">
+							<div class="col-2">
+                                <ul class="match-info">
+                                    <li class="q">{{ highlight_game["queue"] }}</li> 
+                                    <li class="{{ highlight_game['result'] }}-table-overview"><span class="label label-info">{{ highlight_game["result"] }}</span></li>
+                                    <li class="duration">{{ highlight_game["game_dur"] }}</li>
+                                    <li class="date">{{ highlight_game["gameCreation"] }}</li>
+                                   	<li>
+										<a class="btn btn-outline-primary btn-sm match-more-info" id="highlight-game-details" href="#match-{{ highlight_game['gameId']}}">
+									    Details
+										</a>	                                                       	
+									</li>  	                                                        
+                                </ul>
+                            </div>
+                            <div class="col-2">
+								<a href="/{{ summoner_data.region }}/champ/{{ highlight_game['participants'][highlight_game['place']]['champ']['name'] }}">	                                                	
+                                	<img style="width:5.5rem" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ highlight_game['participants'][highlight_game['place']]['champ']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ highlight_game['participants'][highlight_game['place']]['champ']['name'] }}: </b><em>{{ highlight_game['participants'][highlight_game['place']]['champ']['tags'] }}</em>">
+                               	</a>
+                            </div>
+                            <div class="col-1">
+                                <div class="row">
+                                	<div class="col summ-img" style="margin-bottom: 2.5px">
+										<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ highlight_game['participants'][highlight_game['place']]['spell1']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ highlight_game['participants'][highlight_game['place']]['spell1']['name'] }}: </b><em>{{ highlight_game['participants'][highlight_game['place']]['spell1']['des'] }}</em>"> 
+									</div>
+								</div>
+								<div class="row">
+									<div class="col summ-img">
+										<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ highlight_game['participants'][highlight_game['place']]['spell2']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ highlight_game['participants'][highlight_game['place']]['spell2']['name'] }}: </b><em>{{ highlight_game['participants'][highlight_game['place']]['spell2']['des'] }}</em>">
+									</div>
+                                </div>  
+                            </div>
+                            <div class="col-3">
+                            	<div class="items row">
+                            		<div class="col-3 accessories">
+										<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ highlight_game['participants'][highlight_game['place']]['items'][6]['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ highlight_game['participants'][highlight_game['place']]['items'][6]['name'] }}: </b><em>{{ highlight_game['participants'][highlight_game['place']]['items'][6]['des'] }}</em>">
+									</div>
+                                	{% for item in highlight_game["participants"][highlight_game["place"]]["items"][:3] %}
+                                		{% if item is mapping %}
+                                			<div class="col-3 item-img">
+												<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+											</div>
+										{% else %}
+                                			<div class="col-3 item-img">
+												<img class="item-img" src="{{ item }}.png">
+											</div>														
+										{% endif %}
+                                	{% endfor %}
+                            	</div>
+                            	<div class="items row">
+                            		<div class="col-3 accessories">
+										<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/mastery/{{ highlight_game['participants'][highlight_game['place']]['keystone']['image'] }}.png" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ highlight_game['participants'][highlight_game['place']]['keystone']['name'] }}: </b><em>{{ highlight_game['participants'][highlight_game['place']]['keystone']['des'] }}</em>"> 
+                                	</div>
+                                	{% for item in highlight_game["participants"][highlight_game["place"]]["items"][3:6] %}
+                                		{% if item is mapping %}
+                                			<div class="col-3 item-img">
+												<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+											</div>
+										{% else %}
+                                			<div class="col-3 item-img">
+												<img class="item-img" src="{{ item }}.png">
+											</div>
+										{% endif %}
+                                	{% endfor %}
+                            	</div>
+                            </div>
+                            <div class="col-4">
+                                <ul class="game-stats">
+                                    <li>
+                                    	Rating:
+                                    	<span class="player-rating">
+                                    		{% if highlight_game["player_rating_unweighted"] == "Undefined" %}
+                                    			{{ highlight_game["player_rating_unweighted"] }}
+                                			{% else %}
+                                        		{{ "%0.2f" | format(highlight_game["player_rating_unweighted"]) }}
+                                        	{% endif %}
+                                        </span>
+                                    </li>	                                                    	
+                                    <li class="kda">
+                                    	KDA:
+                                   		{{ highlight_game["participants"][highlight_game["place"]]["stats"]["kills"] }}/{{ highlight_game["participants"][highlight_game["place"]]["stats"]["deaths"] }}/{{ highlight_game["participants"][highlight_game["place"]]["stats"]["assists"] }}
+                                   	</li>
+                                    <li class="vis">
+                                    	Vision score:
+                                   		{{ highlight_game["vis_score"] }}
+                                   	</li>
+                                    <li class="objectives">
+                                    	Objective score:
+                                   		{{ highlight_game["obj_score"] }}
+                                   	</li> 	   	   	  
+                                    <li class="tags small-text">
+                                    	{% for tag in highlight_game["player_tags"][:5] %}
+                                    		<span data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ tag }}</b>: {{ player_tags_des[tag] }}" class="badge badge-danger">{{ tag[:1] }}</span>	
+                                    	{% endfor %}                                                          
+                                   	</li>	                                                          	
+                                </ul>                                                	
+                            </div>
+                        </div>	            			
+	            	{% endif %}
+	            </div>
+
+	            <hr />
+	            <div class="container">
+	                <div class="row">
+	                    <div class="col-sm-9" id="mh-wrapper">
+		 	            <h4 class="content-title">Match History</h4>
+	                    {% if summoner_data.name and summoner_data.region %}
+	                        <div class="container">
+	                            {% if mh %}
+	                                <div id="match-history">
+	                                    {% for match in mh %}     
+	                                            <div class="row match {{ match['result'] }}-row" id="match-{{ match['gameId'] }}">
+	                                                <div class="col-2">
+	                                                    <ul class="match-info">
+	                                                        <li class="q">{{ match["queue"] }}</li> 
+	                                                        <li class="{{ match['result'] }}-table-overview"><span class="label label-info">{{ match["result"] }}</span></li>
+	                                                        <li class="duration">{{ match["game_dur"] }}</li>
+	                                                        <li class="date">{{ match["gameCreation"] }}</li>
+	                                                       	<li>
+																<a class="btn btn-outline-primary btn-sm match-more-info" id="highligh-game-details" data-toggle="collapse" href="#match-details-{{ match['gameId'] }}" aria-expanded="false" aria-controls="match-details-{{ match['gameId'] }}">
+															    Match Details
+																</a>	                                                       	
+															</li>  	                                                        
+	                                                    </ul>
+	                                                </div>
+	                                                <div class="col-2">
+														<a href="/{{ summoner_data.region }}/champ/{{ match['participants'][match['place']]['champ']['name'] }}">	                                                	
+		                                                	<img style="width:5.5rem" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ match['participants'][match['place']]['champ']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ match['participants'][match['place']]['champ']['name'] }}: </b><em>{{ match['participants'][match['place']]['champ']['tags'] }}</em>">
+		                                               	</a>
+	                                                </div>
+	                                                <div class="col-1">
+			                                            <div class="row">
+			                                            	<div class="col summ-img" style="margin-bottom: 2.5px">
+																<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ match['participants'][match['place']]['spell1']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ match['participants'][match['place']]['spell1']['name'] }}: </b><em>{{ match['participants'][match['place']]['spell1']['des'] }}</em>"> 
+															</div>
+														</div>
+														<div class="row">
+															<div class="col summ-img">
+																<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ match['participants'][match['place']]['spell2']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ match['participants'][match['place']]['spell2']['name'] }}: </b><em>{{ match['participants'][match['place']]['spell2']['des'] }}</em>">
+															</div>
+			                                            </div>  
+	                                                </div>
+	                                                <div class="col-3">
+	                                                	<div class="items row">
+	                                                		<div class="col-3 accessories">
+																<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ match['participants'][match['place']]['items'][6]['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ match['participants'][match['place']]['items'][6]['name'] }}: </b><em>{{ match['participants'][match['place']]['items'][6]['des'] }}</em>">
+															</div>
+		                                                	{% for item in match["participants"][match["place"]]["items"][:3] %}
+		                                                		{% if item is mapping %}
+		                                                			<div class="col-3 item-img">
+																		<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																	</div>
+																{% else %}
+		                                                			<div class="col-3 item-img">
+																		<img class="item-img" src="{{ item }}.png">
+																	</div>														
+																{% endif %}
+		                                                	{% endfor %}
+	                                                	</div>
+	                                                	<div class="items row">
+	                                                		<div class="col-3 accessories">
+																<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/mastery/{{ match['participants'][match['place']]['keystone']['image'] }}.png" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ match['participants'][match['place']]['keystone']['name'] }}: </b><em>{{ match['participants'][match['place']]['keystone']['des'] }}</em>"> 
+		                                                	</div>
+		                                                	{% for item in match["participants"][match["place"]]["items"][3:6] %}
+		                                                		{% if item is mapping %}
+		                                                			<div class="col-3 item-img">
+																		<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																	</div>
+																{% else %}
+		                                                			<div class="col-3 item-img">
+																		<img class="item-img" src="{{ item }}.png">
+																	</div>
+																{% endif %}
+		                                                	{% endfor %}
+	                                                	</div>
+	                                                </div>
+	                                                <div class="col-4">
+	                                                    <ul class="game-stats">
+	                                                        <li>
+	                                                        	Rating:
+	                                                        	<span class="player-rating">
+		                                                    		{% if match["player_rating_unweighted"] == "Undefined" %}
+		                                                    			{{ match["player_rating_unweighted"] }}
+		                                                			{% else %}
+			                                                    		{{ "%0.2f" | format(match["player_rating_unweighted"]) }}
+			                                                    	{% endif %}
+			                                                    </span>
+	                                    						{% if match["gameId"] == highlight_game["gameId"] %}
+																	<i class="fa fa-star" aria-hidden="true" style="color:#ffbb33"></i>
+	                                    						{% endif %}
+			                                                </li>	                                                    	
+	                                                        <li class="kda">
+	                                                        	KDA:
+	                                                       		{{ match["participants"][match["place"]]["stats"]["kills"] }}/{{ match["participants"][match["place"]]["stats"]["deaths"] }}/{{ match["participants"][match["place"]]["stats"]["assists"] }}
+	                                                       	</li>
+	                                                        <li class="vis">
+	                                                        	Vision score:
+	                                                       		{{ match["vis_score"] }}
+	                                                       	</li>
+	                                                        <li class="objectives">
+	                                                        	Objective score:
+	                                                       		{{ match["obj_score"] }}
+	                                                       	</li> 	   	   	  
+	                                                        <li class="tags small-text">
+	                                                        	{% for tag in match["player_tags"][:5] %}
+	                                                        		<span data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ tag }}</b>: {{ player_tags_des[tag] }}" class="badge badge-danger">{{ tag[:1] }}</span>	
+	                                                        	{% endfor %}                                                          
+	                                                       	</li>	                                                          	
+	                                                    </ul>                                                	
+	                                                </div>
+	                                            </div>
+												<div class="container hidden-row">
+											    	<div class="row collapse" id="match-details-{{ match['gameId'] }}" style="background-color:rgba(158, 158, 158, 0.1)"> 
+											    		<div class="blue-team">
+											    			<div class="match-details-header row">
+												      			<div class="col">
+																	<h6>Blue Team</h6>
+												      			</div>											    				
+												      			<div class="col">
+																	<h6 class="{{ match['teams'][0]['result'] }}">{{ match['teams'][0]['result'] }}</h6>
+												      			</div>
+												      			<div class="col">
+												      				<h6 class="kda">KDA: {{ "%0.2f" | format((match['blue_team_stats']['t_kills']+match['blue_team_stats']['t_assists'])/match['blue_team_stats']['t_deaths']) }}</h6>
+												      			</div>	
+												      			<div class="col">
+																	<h6 class="rating">Rating: {{ "%0.2f" | format(match['blue_team_stats']['t_rating']/5) }}</h6>					
+																</div>
+												      			<div class="col">
+												      				<h6 class="tower-kills">Towers: {{ match['teams'][0]['towerKills'] }}</h6>
+												      			</div>			
+												      			<div class="col">
+												      				<h6 class="dragon-kills">Drakes: {{ match['teams'][0]['dragonKills'] }}</h6>
+												      			</div>													   
+												      			<div class="col">
+												      				<h6 class="baron-kills">Barons: {{ match['teams'][0]['baronKills'] }}</h6>
+												      			</div>
+												      		</div>
+													      	<table class="table table-sm team-stats" style="background-color: rgba(3, 169, 244, 0.2)">
+													      		<tbody>
+													      			<tr>
+													      				<td><b>Summoner</b></td>
+													      				<td><b>Role</b></td>
+													      				<td><b>Champ</b></td>
+													      				<td><b>Items</b></td>
+													      				<td><b>Rating</b></td>
+													      				<td><b>Vis</b></td>
+													      				<td><b>Obj</b></td>									
+													      				<td><b>KDA</b></td>
+													      				<td><b>CS</b></td>
+													      				<td><b>DMG%</b></td>
+													      				<td><b>Gold%</b></td>
+													      				<td><b>KP</b></td>
+													      			</tr>
+													      			{% for blue_player in match["participants"][:5] %}
+													      				{% set blue_player_name = match["participantIdentities"][blue_player["participantId"]-1]["player"]["summonerName"] %}
+													      				{% if blue_player["participantId"]-1 == match["place"] %}
+													      				<tr style="background-color: rgba(96, 125, 139, 0.1)">
+													      					<td>
+													      						<a href="/{{ summoner_data.region }}/summoner/{{ blue_player_name }}">
+														      						{{ blue_player_name }}					      	
+															      					<i class="fa fa-user" aria-hidden="true"></i>
+														      					</a>
+													      					</td>													      		
+													      				{% else %}
+													      				<tr>
+													      					<td>
+													      						<a href="/{{ summoner_data.region }}/summoner/{{ blue_player_name }}">					
+													      							{{ blue_player_name }}				
+													      						</a>	      			
+													      					</td>													      		
+													      				{% endif %}
+													      					<td>
+													      						{{ blue_player["role"] }}
+													      					</td>															   	
+													      					<td>
+													      						<div class="row">
+													      							<div class="col-6">
+													      								<a href="/{{ summoner_data.region }}/champ/{{ blue_player['champ']['name'] }}">
+													      									<img style="width:2rem" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ blue_player['champ']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ blue_player['champ']['name'] }}: </b><em>{{ blue_player['champ']['tags'] }}</em>">
+													      								</a>
+													      							</div>
+													      							<div class="col-6 details-summs-row">
+													      								<div class="row">
+													      									<div class="col match-details-summs">
+																								<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ blue_player['spell1']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ blue_player['spell1']['name'] }}: </b><em>{{ blue_player['spell1']['des'] }}</em>">
+																							</div>						
+													      								</div>
+													      								<div class="row">
+													      									<div class="col match-details-summs">
+																								<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ blue_player['spell2']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ blue_player['spell2']['name'] }}: </b><em>{{ blue_player['spell2']['des'] }}</em>">
+																							</div>		
+													      								</div>
+													      							</div>
+													      						</div>
+													      					</td>				
+													      					<td class="match-details-items">
+													      						<div class="row">
+												      							{% for item in blue_player["items"][:3] %}
+							                                                		{% if item is mapping %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																						</div>
+																					{% else %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="{{ item }}.png">
+																						</div>
+																					{% endif %}		
+																				{% endfor %}
+																				</div>
+													      						<div class="row">
+												      							{% for item in blue_player["items"][3:6] %}
+							                                                		{% if item is mapping %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																						</div>
+																					{% else %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="{{ item }}.png">
+																						</div>
+																					{% endif %}		
+																				{% endfor %}
+																				</div>									
+													      					</td>
+													      					<td class="player-rating">
+													      						{% if blue_player["rating"] != "Undefined" %}
+													      							{{ "%0.2f" | format(blue_player["rating"]) }}				
+													      						{% else %}	
+													      							{{ blue_player["rating"] }}
+													      						{% endif %}	      			
+													      					</td>
+													      					<td>
+													      						{{ "%0.2f" | format(blue_player["vision"]) }}					
+													      					</td>
+													      					<td>
+													      						{{ "%0.2f" | format(blue_player["objectives"]) }}
+													      					</td>													      		
+													      					<td>
+													      						{{ blue_player["stats"]["kills"] }}/{{ blue_player["stats"]["deaths"] }}/{{ blue_player["stats"]["assists"] }}			
+													      					</td>		
+													      					<td>
+													      						{{ blue_player["stats"]["totalMinionsKilled"] }}					  
+													      					</td>				
+													      					<td>
+													      						{{ "%0.1f" | format((blue_player["stats"]["totalDamageDealtToChampions"]/match["blue_team_stats"]["t_damage"])*100) }}%
+													      					</td>
+													      					<td>
+													      						{{ "%0.1f" | format((blue_player["stats"]["goldEarned"]/match["blue_team_stats"]["t_gold"])*100) }}%
+													      					</td>													      		
+													      					<td>
+													      						{{ "%0.1f" | format(((blue_player["stats"]["kills"]+blue_player["stats"]["assists"])/match["blue_team_stats"]["t_kills"])*100) }}%
+													      					</td>						    
+													      				</tr>
+													      			{% endfor %}
+													      		</tbody>
+													      	</table>
+												      	</div>
+												      	<div class="red-team">
+												      		<div class="match-details-header row">
+												      			<div class="col">
+																	<h6>Red Team</h6>
+												      			</div>
+												      			<div class="col">
+																	<h6 class="{{ match['teams'][1]['result'] }}">{{ match['teams'][1]['result'] }}</h6>
+												      			</div>
+												      			<div class="col">
+																	<h6 class="kda">KDA: {{ "%0.2f" | format((match['red_team_stats']['t_kills']+match['red_team_stats']['t_assists'])/match['red_team_stats']['t_deaths']) }}</h6>						
+																</div>	
+												      			<div class="col">
+												      				<h6 class="rating">Rating: {{ "%0.2f" | format(match['red_team_stats']['t_rating']/5) }}</h6>
+												      			</div>								      			
+												      			<div class="col">
+												      				<h6 class="tower-kills">Towers: {{ match['teams'][1]['towerKills'] }}</h6>
+												      			</div>			
+												      			<div class="col">
+												      				<h6 class="dragon-kills">Drakes: {{ match['teams'][1]['dragonKills'] }}</h6>
+												      			</div>													   
+												      			<div class="col">
+												      				<h6 class="baron-kills">Barons: {{ match['teams'][1]['baronKills'] }}</h6>
+												      			</div>															      			
+												    		</div>
+													      	<table class="table table-sm team-stats" style="background-color: rgba(233, 30, 99, 0.2)">
+													      		<tbody>
+													      			<tr>
+													      				<td><b>Summoner</b></td>
+													      				<td><b>Role</b></td>
+													      				<td><b>Champ</b></td>
+													      				<td><b>Items</b></td>
+													      				<td><b>Rating</b></td>
+													      				<td><b>Vis</b></td>
+													      				<td><b>Obj</b></td>									
+													      				<td><b>KDA</b></td>
+													      				<td><b>CS</b></td>
+													      				<td><b>DMG%</b></td>
+													      				<td><b>Gold%</b></td>
+													      				<td><b>KP</b></td>
+													      			</tr>													     	
+													      			{% for red_player in match["participants"][5:] %}
+													      				{% set red_player_name = match["participantIdentities"][red_player["participantId"]-1]["player"]["summonerName"] %}
+													      				{% if red_player["participantId"]-1 == match["place"] %}
+													      				<tr style="background-color: rgba(96, 125, 139, 0.1)">
+													      					<td>
+													      						<a href="/{{ summoner_data.region }}/summoner/{{ red_player_name }}">
+														      						{{ red_player_name }}					      
+															      					<i class="fa fa-user" aria-hidden="true"></i>
+														      					</a>
+													      					</td>													      		
+													      				{% else %}
+													      				<tr>
+													      					<td>
+													      						<a href="/{{ summoner_data.region }}/summoner/{{ red_player_name }}">					
+													      							{{ red_player_name }}				
+													      						</a>					      			
+													      					</td>													      		
+													      				{% endif %}
+													      					<td>
+													      						{{ red_player["role"] }}
+													      					</td>													      	
+													      					<td>
+													      						<div class="row">
+													      							<div class="col-6">
+													      								<a href="/{{ summoner_data.region }}/champ/{{ red_player['champ']['name'] }}">		
+													      									<img style="width:2rem" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ red_player['champ']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ red_player['champ']['name'] }}: </b><em>{{ red_player['champ']['tags'] }}</em>">
+													      								</a>
+													      							</div>
+													      							<div class="col-6 details-summs-row">
+													      								<div class="row">
+													      									<div class="col match-details-summs">
+																								<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ red_player['spell1']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ red_player['spell1']['name'] }}: </b><em>{{ red_player['spell1']['des'] }}</em>">
+																							</div>						
+													      								</div>
+													      								<div class="row">
+													      									<div class="col match-details-summs">	
+													      										<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ red_player['spell2']['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ red_player['spell2']['name'] }}: </b><em>{{ red_player['spell2']['des'] }}</em>">  
+													      									</div>
+													      								</div>
+													      							</div>
+													      						</div>					
+													      					</td>
+													      					<td class="match-details-items">
+													      						<div class="row">
+												      							{% for item in red_player["items"][:3] %}
+							                                                		{% if item is mapping %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																						</div>
+																					{% else %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="{{ item }}.png">
+																						</div>
+																					{% endif %}		
+																				{% endfor %}
+																				</div>
+													      						<div class="row">
+												      							{% for item in red_player["items"][3:6] %}
+							                                                		{% if item is mapping %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ item['image'] }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ item['name'] }}: </b><em>{{ item['des'] }}</em>">
+																						</div>
+																					{% else %}
+							                                                			<div class="col-3 details-item-img">
+																							<img src="{{ item }}.png">
+																						</div>
+																					{% endif %}		
+																				{% endfor %}
+																				</div>
+													      					</td>
+													      					<td class="player-rating">
+													      						{% if red_player["rating"] != "Undefined" %}
+													      							{{ "%0.2f" | format(red_player["rating"]) }}				
+													      						{% else %}	
+													      							{{ red_player["rating"] }}
+													      						{% endif %}	       			
+													      					</td>
+													      					<td>
+													      						{{ "%0.2f" | format(red_player["vision"]) }}				
+													      					</td>
+													      					<td>
+													      						{{ "%0.2f" | format(red_player["objectives"]) }}	
+													      					</td>													      		
+													      					<td>
+													      						{{ red_player["stats"]["kills"] }}/{{ red_player["stats"]["deaths"] }}/{{ red_player["stats"]["assists"] }}			
+													      					</td>		
+													      					<td>
+													      						{{ red_player["stats"]["totalMinionsKilled"] }}					  
+													      					</td>				
+													      					<td>
+													      						{{ "%0.1f" | format((red_player["stats"]["totalDamageDealtToChampions"]/match["red_team_stats"]["t_damage"])*100) }}%
+													      					</td>
+													      					<td>
+													      						{{ "%0.1f" | format((red_player["stats"]["goldEarned"]/match["red_team_stats"]["t_gold"])*100) }}%
+													      					</td>													      		
+													      					<td>
+													      						{{ "%0.1f" | format(((red_player["stats"]["kills"]+red_player["stats"]["assists"])/match["red_team_stats"]["t_kills"])*100) }}%
+													      					</td>													     		
+													      				</tr>
+													      			{% endfor %}													      		
+													      		</tbody>
+													      	</table>
+													    </div>												      
+											      	</div> 
+												</div>
+	                                    {% endfor %}
+	                                </div>
+	                            </div>
+		                            <br>
+		                            {% if mh|length > 10 %}
+			                            <button type="submit" id="more">Show More</button>
+			                            <br />
+			                            {% if icon %}
+			                                <img src={{ icon }}>
+			                            {% endif %}
+			                        {% endif %}
+	                            {% else %}
+	                                <h2>No recent ranked matches discovered.</h2>
+	                            {% endif %}                
+	                        {% else %}
+	                            <h1>Error! Summoner {{ summoner_data.name }} not found</h1>
+	                        	
+	                        {% endif %}
+	                    <br />
+	                    <a href="{{ url_for('index') }}">Back</a>
+	                      
+	            
+	                    </div>
+	            
+	                    <div class="col-sm-3" id="extra-info">
+	                    	<h4 class="content-title">Stats (Last {{ info["num_games"]["total"] }})</h4>
+	                        <div class="sidebar-module sidebar-module-inset">
+	                            <h5>
+	                            	Winrate: <span class="player-wr">{{ "%0.2f" | format((info["total_wins"]/info["num_games"]["counted"])*100) }}</span>%
+	                            </h5>
+	                        </div>                                              
+	                        <div class="sidebar-module sidebar-module-inset">
+	                            <h5>Preffered Roles</h5>
+	                            <ol class="list-unstyled">
+		                            {% for role,count in info["chosen_roles"].items() %}
+		                            	{% set role_rate = count/info["num_games"]["counted"] %}
+		                            	{% if role_rate >= 0.07 %}
+		                            		<li>{{ role }} - {{ "%0.2f" | format(role_rate*100) }}%</li>
+		                            	{% endif %}
+		                            {% endfor %}
+	                        	</ol>
+	                        </div>
+	                        <div class="sidebar-module">
+	                            <h5>Best Champs</h5>
+	                            <ol class="list-unstyled">
+                                	{% set best_champ_count = [0] %}
+	                                {% for played_champ in info["best_champs"] %}
+	                                	{% set rating = played_champ["uw_rating"]/(played_champ["plays"]-played_champ["remakes"]) %}
+	                                	{% if played_champ["plays"] > (info["num_games"]["counted"]*0.05) and best_champ_count[0] < 3 %}
+											{% if best_champ_count.append(best_champ_count.pop() + 1) %}{% endif %}
+	                                		<li>{{ played_champ["name"] }} - <span class="player-rating">{{ "%0.2f" | format(rating) }}</span> rating</li>
+	                                	{% endif %}
+	                                {% endfor %}
+	                            </ol>
+	                        </div>                 
+	                        <div class="sidebar-module">
+	                            <h5>Frequent Bans</h5>
+	                            <ol class="list-unstyled">
+	                                {% for banned_champ in info["bans"] %}
+	                                	{% set banrate = banned_champ["ban_num"]/info["num_games"]["counted"] %}
+	                                	{% if loop.index < 4 %}
+	                                		<li>{{ banned_champ["name"] }} - {{ "%0.2f" | format(banrate*100) }}%</li>
+	                                	{% endif %}
+	                                {% endfor %}
+	                            </ol>
+	                        </div>
+	                        <div class="sidebar-module">
+	                            <h5>Most Played Champs</h5>
+	                            <ol class="list-unstyled">
+	                                {% for played_champ in info["played"] %}
+	                                	{% set playrate = played_champ["plays"]/info["num_games"]["counted"] %}
+	                                	{% if loop.index < 4 %}
+	                                		<li>{{ played_champ["name"] }} - {{ "%0.2f" | format(playrate*100) }}%</li>
+	                                	{% endif %}
+	                                {% endfor %}
+	                            </ol>
+	                        </div>
+	                        <div class="sidebar-module">
+	                            <h5>Game Stats</h5>
+	                            <ol class="list-unstyled">
+	                            	{% set avg_game_length = info["game_length"]/info["num_games"]["counted"] %}
+	                            	<li>Remake rate: {{ "%0.2f" | format((info["num_remakes"]/info["num_games"]["total"])*100) }}%</li>
+	                                <li>Average game length: {{ "%0.2f" | format(avg_game_length) }} mins</li>
+	                                <li>Rank Playtime(est): {{ "%0.2f" | format((avg_game_length * (league_data["wins"] + league_data["losses"]))/60) }} hours</li>
+	                            </ol>
+	                        </div>     
+	                        <div class="sidebar-module">
+	                            <h5>Team rate</h5>
+	                            <ol class="list-unstyled">
+	                            	{% set blue_team_rate = info["blue_team"]["count"]/info["num_games"]["total"] %}
+	                            	{% set blue_team_wr = info["blue_team"]["wins"]/info["num_games"]["total"] %}
+
+	                                <li>Blue: {{ "%0.2f" | format(blue_team_rate*100) }}% - WR: {{ "%0.2f" | format(blue_team_wr*100) }}%</li>
+	                                <li>Red: {{ "%0.2f" | format((1-blue_team_rate)*100) }}% - WR: {{ "%0.2f" | format((1-blue_team_wr)*100) }}%</li>
+	                            </ol>
+	                        </div>                                                              
+	                        <div class="sidebar-module">
+	                            <h5>Play Dates (EST)</h5>
+	                            <ol class="list-unstyled">
+	                            	{% for weekday,times in info["plays_period"].items() %}
+	                            		{% for time,count in times.items() %}
+	                            			{% set time_play_rate = (count/info["num_games"]["counted"]) %}
+	                            			{% if time_play_rate >= 0.15 %}
+	                            				<li>{{ weekday }} - {{ time }} ({{ "%0.2f" | format(time_play_rate*100) }}%)</li>
+	                            			{% endif %}
+	                            		{% endfor %}
+	                            	{% endfor %}
+	                            </ol>
+	                        </div>                        
+	                    </div><!-- /.blog-sidebar -->
+	        
+	                </div><!-- /.row -->
+	        
+	            </div><!-- /.container -->
+	        </div>
+	    </div>
+	{% else %}
+	<div class="container">
+		<h3 class="text-center">{{ summoner_data.name }} - {{ summoner_data.region }}</h3>
+		<h4 class="text-center">Inactive</h4>
+    </div>
+    {% endif %}
+{% endblock %}

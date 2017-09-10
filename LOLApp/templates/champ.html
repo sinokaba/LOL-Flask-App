@@ -1,0 +1,1227 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Scryer's Analytics - {{ region }}/{{ name }}
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron border-top-0" style="background-image: url('http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ splash }}_1.jpg');">
+      	<div class="row">
+      		<div id="champ-card" class="col-2">
+				<div class="card" style="width:9rem" id="champ-main-card">
+		            <img class="card-img-top" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ champ_basic.image }}" alt="{{ champ_basic.image }}">
+			    </div>
+		    </div>
+		    <div id="champ-profile-cont" class="col-4">
+		    	<div class="row">
+		       		<h1 class="display-4 banner-text" style="font-weight:400" id="champ-name">{{ name }}</h1>
+		       	</div>
+		    	<div class="row rating-cont">
+		       		<h3 class="display-5 banner-text" style="font-weight:600">
+			       		Rating: <span class="champ-rating">{{ cum_stats["rating"] }}</span> - <span class="badge badge-default"> #{{ rating_placement}} in {{ region }}</span> 
+		       		</h3>
+		       	</div>
+		       	<div class="row">
+		       		{% if champ_basic.role2 %}
+			       		<h4 class="display-5 banner-text" style="font-weight:600">
+				       		{{ champ_basic.role1 }}/{{ champ_basic.role2 }}
+			       		</h4>	  			       		
+			       	{% else %}
+			       		<h4 class="display-5 banner-text" style="font-weight:600">
+				       		{{ champ_basic.role1 }}
+			       		</h4>	
+		       		{% endif %}
+		       	</div>
+		       	<div class="row">
+                    <div class="early-game-ratings">
+                    	{% if champ_basic.statsRanking["early"] > 5 %}
+							<span class="badge badge-success">Strong early game</span>
+						{% elif champ_basic.statsRanking["early"] > 5 %}
+							<span class="badge badge-info">Good early game</span>
+						{% elif champ_basic.statsRanking["early"] > 4 %}
+							<span class="badge badge-warning">Average early game</span>
+						{% else %}
+							<span class="badge badge-danger">Weak early game</span>
+						{% endif %}
+                      	{% if champ_basic.statsRanking["late"]|float > 10 %}
+							<span class="badge badge-success">Strong late game</span>
+						{% elif champ_basic.statsRanking["late"]|float > 7 %}
+							<span class="badge badge-info">Good late game</span>
+						{% elif champ_basic.statsRanking["late"]|float > 5.5 %}
+							<span class="badge badge-warning">Average late game</span>
+						{% else %}
+							<span class="badge badge-danger">Weak late game</span>
+						{% endif %}
+                    </div>
+		       	</div>
+		       	<div class="row">
+		       		<span class="badge badge-default">{{ champ_basic.tag1 }}</span>
+		       		{% if champ_basic.tag2 %}
+		       		<span class="badge badge-default">{{ champ_basic.tag2 }}</span>
+					{% endif %}		       		
+		       	</div>
+		    </div>
+		</div>
+		<div class="row champ-des">
+			<div class="col">
+		    	<div class="input-group">
+					<form class="form-inline my-2 my-lg-0" name="{{ name }}-{{ region }}" id="additional-champ">
+			        	<div class="input-group">
+							<button type="button" class="btn btn-primary compare" id="compare-champ">Compare</button>
+							<button type="submit" class="btn btn-success hidden" id="add-champ">Add >></button>
+					        <input class="form-control mr-sm-2 invisible" type="text" id="add-champ-input" name="additionalChamp" list="datalist" maxlength="16" placeholder="Champion name" autocomplete="off">
+					        <datalist id="datalist"></datalist>
+						</div>
+		            </form>
+				</div>
+			</div>
+      	</div>
+	</div>
+
+
+	<div id="champs-compare-modal" data-backdrop="static" class="modal fade champs-comparison" tabindex="-1" role="dialog" aria-labelledby="champs-compare" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">{{ name }} VS </h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body hidden">
+  					<div class="container-fluid">
+  						<div class="row">
+  							<div class="col-6" id="compare-champ1">
+  								<div class="row">
+  									<div class="col">
+		  								<h3>
+		  									<img class="compare-champ-icon" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ champ_basic.image }}" alt="{{ champ_basic.image }}">
+		  									{{ name }}({{ champ_basic.role1 }}/{{ champ_basic.role2 }})
+		  								</h3>
+		  							</div>
+		  						</div>
+  								<div class="row">
+  									<div class="col">
+		  								<h5>
+		  									Rating: <span class="compare-champ-rating">{{ cum_stats["rating"] }}</span> | KDA: <span class="compare-champ-kda">{{ kda }}</span>
+		  								</h5>
+		  							</div>
+		  						</div>		  						
+				               	<table class="table table-sm" id="compare-champ1-static">
+				               		<tbody class="compare-champ-static-stat">
+				               			<tr>
+					               			<td class="compare-resource">
+					               				Resource: <span id="champ1-resource">{{ champ_basic.resource }}</span>
+					               			</td>
+					               			<td class="compare-aa">
+					               				Range: <span>{{ champ_basic.aaRange }}</span>
+					               			</td>
+					               			<td class="compare-ms">
+					               				MS: <span>{{ champ_basic.movespeed }}</span>
+					               			</td>
+					               		</tr>
+					               		<tr>
+					               			<td class="compare-br">
+					               				BR: <span>{{ overall_br_str }}</span>%
+					               			</td>
+					               			<td class="compare-pr">
+					               				PR: <span>{{ overall_pr_str }}</span>%
+
+					               			</td>
+					               			<td class="compare-wr">
+					               				WR: <span>{{ overall_wr_str }}</span>%
+					               			</td>
+					               		</tr>
+				               		</tbody>
+				               	</table>
+				               	<div class="base-stats">
+				               		<table class="table table-sm" id="compare-champ1-base">
+				               			<caption>
+				               				Base Stats
+				               			</caption>
+				               			<thead>
+				               				<tr>
+				               					<td>Stat</td>
+				               					<td>Base</td>
+				               					<td>Growth</td>
+				               				</tr>
+				               			</thead>
+				               			<tbody class="champ-base-stats compare-champ-base">
+				               				<tr>
+				               					<td>HP</td>
+				               					<td class="hp">{{ champ_basic.hp }}</td>
+				               					<td class="hp-pl">{{ champ_basic.hpPL }}</td>
+				               				</tr>
+				               				<tr>
+				               					<td>HP Regen</td>
+				               					<td class="hpregen">{{ champ_basic.hpRegen }}</td>
+				               					<td class="hpregen-pl">{{ champ_basic.hpRegenPL }}</td>  
+				               				</tr>
+				               				<tr>
+				               					<td>Armor</td>
+				               					<td class="armor">{{ champ_basic.armor }}</td>
+				               					<td class="armor-pl">{{ champ_basic.armorPL }}</td>
+				               				</tr>
+				               				<tr>
+				               					<td>MR</td>
+				               					<td class="mr">{{ champ_basic.mr }}</td>
+				               					<td class="mr-pl">{{ champ_basic.mrPL }}</td>
+				               				</tr>
+				               				<tr>
+				               					<td>AD</td>
+				               					<td class="ad">{{ champ_basic.ad }}</td>
+				               					<td class="ad-pl">{{ champ_basic.adPL }}</td>
+				               				</tr>
+				               				<tr>
+				               					<td>Attack Speed</td>
+				               					<td class="attackspeed">{{ champ_basic.attackspeed }}</td>
+				               					<td class="attackspeed-pl">{{ champ_basic.attackspeedPL }}%</td>
+				               				</tr>
+				               					{% if champ_basic.resource == "Mana" %}
+				               						<tr>
+					               						<td>Mana</td>
+					               						<td class="mana">{{ champ_basic.mana }}</td>
+					               						<td class="mana-pl">{{ champ_basic.manaPL }}</td>
+						               				</tr>
+					               					<tr>
+					               						<td>Mana Regen</td>
+					               						<td class="manaregen">{{ champ_basic.manaRegen }}</td>
+					               						<td class="manaregen-pl">{{ champ_basic.manaRegenPL }}</td>
+						               				</tr>
+						               			{% else %}
+				               						<tr>
+					               						<td>Mana</td>
+					               						<td class="mana"></td>
+					               						<td class="mana-pl"></td>
+						               				</tr>
+					               					<tr>
+					               						<td>Mana Regen</td>
+					               						<td class="manaregen"></td>
+					               						<td class="manaregen-pl"></td>
+						               				</tr>						               			
+				               					{% endif %}
+				               			</tbody>
+				               		</table>
+			               		</div>
+			               		<table class="table table-sm" id="compare-champ1-rank-stats">	
+			               			<caption>
+			               				Rank Stats
+			               			</caption>	               			
+			               			<tbody class="compare-champ-rank-stats champ-base-stats"> 
+			               				<tr>
+			               					<td>Damage/gold</td>
+			               					<td class="compare-dpg">{{ cum_stats["dpg"] }}</td>
+			               				</tr>
+			               				<tr>
+			               					<td>Damage mitigated/gold</td>
+			               					<td class="compare-dmpg">{{ cum_stats["dmpg"] }}</td>
+			               				</tr>
+			               				<tr>
+			               					<td>CSPM</td>
+			               					<td class="compare-cspm">{{ cum_stats["cspm"] }}</td>
+			               				</tr>
+			               				<tr>
+			               					<td>GPM</td>
+			               					<td class="compare-gpm">{{ cum_stats["gpm"] }}</td>
+			               				</tr>
+			               				<tr>
+			               					<td>Vis score</td>
+			               					<td class="compare-vis">{{ cum_stats["vis"] }}</td>
+			               				</tr>
+			               				<tr>
+			               					<td>Obj score</td>
+			               					<td class="compare-objectives">{{ cum_stats["objectives"] }}</td>
+			               				</tr>
+			               			</tbody>
+			               		</table>
+   								<!--put all current champ data here-->
+  							</div>
+  							<div class="col-6" id="compare-champ2">
+								<div class="row">
+  									<div class="col">
+		  								<h3 id="champ2-img-name">
+
+		  								</h3>
+		  							</div>
+		  						</div>
+  								<div class="row">
+  									<div class="col">
+		  								<h5 id="champ2-rating-kda">
+
+		  								</h5>
+		  							</div>
+		  						</div>		  						
+				               	<table class="table table-sm" id="compare-champ2-static">
+				               		<tbody class="compare-champ-static-stat">
+				               			<tr>
+					               			<td class="compare-resource">
+					               				Resource: <span id="champ2-resource"></span>
+					               			</td>
+					               			<td class="compare-aa">
+					               				Range: <span id="champ2-aarange"></span>
+					               			</td>
+					               			<td class="compare-ms">
+					               				MS: <span id="champ2-ms"></span>
+					               			</td>
+					               		</tr>
+					               		<tr>
+					               			<td class="compare-br">
+					               				BR: <span id="champ2-br"></span>%
+					               			</td>
+					               			<td class="compare-pr">
+					               				PR: <span id="champ2-pr"></span>%
+
+					               			</td>
+					               			<td class="compare-wr">
+					               				WR: <span id="champ2-wr"></span>%
+					               			</td>
+					               		</tr>
+				               		</tbody>
+				               	</table>
+				               	<div class="base-stats">
+				               		<table class="table table-sm compare-champ-base">
+				               			<caption>
+				               				Base Stats
+				               			</caption>
+				               			<thead>
+				               				<tr>
+				               					<td>Stat</td>
+				               					<td>Base</td>
+				               					<td>Growth</td>
+				               				</tr>
+				               			</thead>
+				               			<tbody class="champ-base-stats">
+				               				<tr>
+				               					<td>HP</td>
+				               					<td id="champ2-hp" class="hp"></td>
+				               					<td id="champ2-hp-pl" class="hp-pl"></td>
+				               				</tr>
+				               				<tr>
+				               					<td>HP Regen</td>
+				               					<td id="champ2-hpregen" class="hpregen"></td>
+				               					<td id="champ2-hpregen-pl" class="hpregen-pl"></td>  
+				               				</tr>
+				               				<tr>
+				               					<td>Armor</td>
+				               					<td id="champ2-armor" class="armor"></td>
+				               					<td id="champ2-armor-pl" class="armor-pl"></td>
+				               				</tr>
+				               				<tr>
+				               					<td>MR</td>
+				               					<td id="champ2-mr" class="mr"></td>
+				               					<td id="champ2-mr-pl" class="mr-pl"></td>
+				               				</tr>
+				               				<tr>
+				               					<td>AD</td>
+				               					<td id="champ2-ad" class="ad"></td>
+				               					<td id="champ2-ad-pl" class="ad-pl"></td>
+				               				</tr>
+				               				<tr>
+				               					<td>Attack Speed</td>
+				               					<td id="champ2-attackspeed" class="attackspeed"></td>
+				               					<td id="champ2-attackspeed-pl" class="attackspeed-pl"></td>
+				               				</tr>
+				               				<tr>
+			               						<td>Mana</td>
+			               						<td id="champ2-mana" class="mana"></td>
+			               						<td id="champ2-mana-pl" class="mana-pl"></td>
+				               				</tr>
+			               					<tr>
+			               						<td>Mana Regen</td>
+			               						<td id="champ2-manaregen" class="manaregen"></td>
+			               						<td id="champ2-manaregen-pl" class="manaregen-pl"></td>
+				               				</tr>
+				               			</tbody>
+				               		</table>
+			               		</div>
+			               		<table class="table table-sm compare-champ-rank-stats" id="compare-champ2-rank-stats">	
+			               			<caption>
+			               				Rank Stats
+			               			</caption>	               			
+			               			<tbody class="champ-base-stats"> 
+			               				<tr>
+			               					<td>Damage/gold</td>
+			               					<td id="champ2-dpg" class="compare-dpg"></td>
+			               				</tr>
+			               				<tr>
+			               					<td>Damage mitigated/gold</td>
+			               					<td id="champ2-dmpg" class="compare-dmpg"></td>
+			               				</tr>
+			               				<tr>
+			               					<td>CSPM</td>
+			               					<td id="champ2-cspm" class="compare-cspm"></td>
+			               				</tr>
+			               				<tr>
+			               					<td>GPM</td>
+			               					<td id="champ2-gpm" class="compare-gpm"></td>
+			               				</tr>
+			               				<tr>
+			               					<td>Vis score</td>
+			               					<td id="champ2-vis" class="compare-vis"></td>
+			               				</tr>
+			               				<tr>
+			               					<td>Obj score</td>
+			               					<td id="champ2-objectives" class="compare-objectives"></td>
+			               				</tr>
+			               			</tbody>
+			               		</table>
+  							</div>  							
+  						</div>
+  					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+	   <div class="row">
+
+	      <div class="col-sm-3">
+	         <div class="chart-wrapper">
+	            <div class="chart-title">
+	               <h4>Info</h4>
+	            </div>
+	            <div class="chart-stage" style="height:36rem">
+	                <div class="row">
+	               		<div class="col">
+	               			<h5>Base Stats</h5>
+	               		</div>
+	               	</div>
+	               	<div class="row">
+	               		<div class="col">
+	               			<h6>Resource: {{ champ_basic.resource }}</h6>
+	               		</div>
+	               	</div>
+	               	<div class="row">
+	               		<div class="col">
+	               			{% if name != "Jayce" and name != "Nidalee" and name != "Elise" and name != "Gnar" %}
+		               			{% if champ_basic.aaRange <= 275 %}
+		               				<h6 data-toggle="tooltip" data-placement="top" data-html="true" title="<em>Melee</em>">Attackrange: {{ champ_basic.aaRange }}</h6>
+		               			{% else %}
+		               				<h6 data-toggle="tooltip" data-placement="top" data-html="true" title="<em>Range</em>">Attackrange: {{ champ_basic.aaRange }}</h6>
+		               			{% endif %}
+		               		{% else %}
+	               				<h6 data-toggle="tooltip" data-placement="top" data-html="true" title="<em>Hybrid</em>">Attackrange: {{ champ_basic.aaRange }}</h6>
+	               			{% endif %}
+	               		</div>
+	               	</div>
+               		<div class="row">
+               			<div class="col">
+               				<h6>Movespeed: {{ champ_basic.movespeed }}</h6>
+               			</div>
+	               	</div>
+	               	<div class="base-stats">
+	               		<table class="table table-sm">
+	               			<thead>
+	               				<tr>
+	               					<td>Stat</td>
+	               					<td>Base</td>
+	               					<td>Growth</td>
+	               					<td>Lvl 18</td>
+	               				</tr>
+	               			</thead>
+	               			<tbody class="champ-base-stats">
+	               				<tr>
+	               					<td>HP</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ hp_placement }} highest</em>">{{ champ_basic.hp }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ hpPL_placement }} highest</em>">{{ champ_basic.hpPL }}</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.hp + champ_basic.hpPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+	               				</tr>
+	               				<tr>
+	               					<td>HP Reg</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ hpRegen_placement }} highest</em>">{{ champ_basic.hpRegen }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ hpRegenPL_placement }} highest</em>">{{ champ_basic.hpRegenPL }}</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.hpRegen + champ_basic.hpRegenPL * 17 * (0.685 + 0.0175 * 18)) }}</td>     
+	               				</tr>
+	               				<tr>
+	               					<td>Armor</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ armor_placement }} highest</em>">{{ champ_basic.armor }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ armorPL_placement }} highest</em>">{{ champ_basic.armorPL }}</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.armor + champ_basic.armorPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+	               				</tr>
+	               				<tr>
+	               					<td>MR</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ mr_placement }} highest</em>">{{ champ_basic.mr }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ mrPL_placement }} highest</em>">{{ champ_basic.mrPL }}</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.mr + champ_basic.mrPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+	               				</tr>
+	               				<tr>
+	               					<td>AD</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ ad_placement }} highest</em>">{{ champ_basic.ad }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ adPL_placement }} highest</em>">{{ champ_basic.adPL }}</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.ad + champ_basic.adPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+	               				</tr>
+	               				<tr>
+	               					<td>Atk Speed</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ attackspeed_placement }} highest</em>">{{ champ_basic.attackspeed }}</td>
+	               					<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ attackspeedPL_placement }} highest</em>">{{ champ_basic.attackspeedPL }}%</td>
+	               					<td>{{ "%0.1f" | format(champ_basic.attackspeed + (champ_basic.attackspeedPL/100) * 17 * (0.685 + 0.0175 * 18)) }}</td>
+	               				</tr>
+	               					{% if champ_basic.resource == "Mana" %}
+	               						<tr>
+		               						<td>Mana</td>
+		               						<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ mana_placement }} highest</em>">{{ champ_basic.mana }}</td>
+		               						<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ manaPL_placement }} highest</em>">{{ champ_basic.manaPL }}</td>
+			               					<td>{{ "%0.1f" | format(champ_basic.mana + champ_basic.manaPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+			               				</tr>
+		               					<tr>
+		               						<td>Mana Reg</td>
+		               						<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ manaRegen_placement }} highest</em>">{{ champ_basic.manaRegen }}</td>
+		               						<td data-toggle="tooltip" data-placement="top" data-html="true" title="<em>{{ manaRegenPL_placement }} highest</em>">{{ champ_basic.manaRegenPL }}</td>
+			               					<td>{{ "%0.1f" | format(champ_basic.manaRegen + champ_basic.manaRegenPL * 17 * (0.685 + 0.0175 * 18)) }}</td>
+			               				</tr>
+	               					{% endif %}
+	               			</tbody>
+	               		</table>
+               		</div>
+	               <div class="row">
+	               		<div class="col">
+	               			<h5>Abilities</h5>
+	               		</div>
+	               	</div>    
+	               	<table class="table table-hover" id="champ-abilities">
+						<tbody>
+						    <tr data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ passive['name'] }}</b>: <em>{{ passive['sanitizedDescription'] }}</em>">
+						    	<td><b>Passive</b></td>
+						    	<td>
+	               					<img class="ability" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/passive/{{ passive['image']['full'] }}">
+	               				</td>						   
+						    </tr>
+						    <tr data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ abilities[0]['name'] }}</b>: <em>{{ abilities[0]['sanitizedDescription'] }}</em>">
+						    	<td><b>Q</b></td>
+						    	<td>
+									<img class="ability" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ abilities[0]['image']['full'] }}">						    
+						    	</td>
+						    </tr>
+						    <tr data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ abilities[1]['name'] }}</b>: <em>{{ abilities[1]['sanitizedDescription'] }}</em>">
+						    	<td><b>E</b></td>
+						    	<td>
+									<img class="ability" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ abilities[1]['image']['full'] }}">						    
+						    	</td>
+						    </tr>
+						    <tr data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ abilities[2]['name'] }}</b>: <em>{{ abilities[2]['sanitizedDescription'] }}</em>">
+						    	<td><b>W</b></td>
+						    	<td>
+									<img class="ability" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ abilities[2]['image']['full'] }}">						    
+						    	</td>						    
+						    </tr>			
+						    <tr data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ abilities[3]['name'] }}</b>: <em>{{ abilities[3]['sanitizedDescription'] }}</em>">
+						    	<td><b>R</b></td>
+						    	<td>
+									<img class="ability" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/spell/{{ abilities[3]['image']['full'] }}">						    
+						    	</td>					    
+						    </tr>					    			    
+						  </tbody>	               		
+	               	</table>	                 		               		               	      	
+	            </div>
+	            <div class="chart-notes">
+	               {{ name }} Basic Info
+	            </div>
+	         </div>
+	      </div>
+
+	      <div class="col-sm-9">
+	         <div class="row">
+	            <div class="col-sm-12">
+	               <div class="chart-wrapper">
+	                  <div class="chart-title">
+	                     <h4>Stats Overall <i class="fa fa-bar-chart" aria-hidden="true"></i></h4>
+	                  </div>
+	                  <div class="chart-stage">
+						<embed type="image/svg+xml" src= {{ overall_stats_graph|safe }} />	                  
+					  </div>
+	                  <div class="chart-notes">
+	                     Overall stats for {{ name }} in {{ region }} compared to global average of all champions
+	                  </div>
+	               </div>
+	            </div>
+	         </div>
+	         <div class="row">
+	            <div class="col-sm-4">
+	               <div class="chart-wrapper">
+	                  <div class="chart-title">
+	                     Banrate Overall <i class="fa fa-times-circle" aria-hidden="true"></i>
+	                  </div>
+	                  <div class="chart-stage">
+						<embed type="image/svg+xml" src= {{ overall_br_graph|safe }} />
+					  </div>
+	                  <div class="chart-notes">
+					    <small class="text-muted">#{{ br_placement }} in {{ region }}</small>
+	                  </div>
+	               </div>
+	            </div>
+	            <div class="col-sm-4">
+	               <div class="chart-wrapper">
+	                  <div class="chart-title">
+	                     Pickrate Overall <i class="fa fa-gamepad" aria-hidden="true"></i>
+	                  </div>
+	                  <div class="chart-stage">
+					 	<embed type="image/svg+xml" src= {{ overall_pr_graph|safe }} />
+					  </div>
+	                  <div class="chart-notes">
+					    <small class="text-muted">#{{ pr_placement }} in {{ region }}</small>
+	                  </div>
+	               </div>
+	            </div>
+	            <div class="col-sm-4">
+	               <div class="chart-wrapper">
+	                  <div class="chart-title">
+	                     Winrate Overall <i class="fa fa-trophy" aria-hidden="true"></i>
+	                  </div>
+	                  <div class="chart-stage">
+						<embed type="image/svg+xml" src= {{ overall_wr_graph|safe }} />
+	                  </div>
+	                  <div class="chart-notes">
+					    <small class="text-muted">#{{ wr_placement }} in {{ region }}</small>
+	                  </div>
+	               </div>
+	            </div>
+	         </div>
+	    </div>
+
+
+		<div class="col-sm-3">
+
+			<div class="chart-wrapper">
+				<div class="chart-title">
+					{% if most_common_roles|length > 1 %}
+				    	<h2>Roles</h2>
+				    {% else %}
+				    	<h2>Role</h2>
+				    {% endif %}
+				</div>
+				<div class="chart-stage">
+                	<ul class="nav nav-tabs card-header-tabs">
+                		{% if most_common_roles %}
+             				{% for champ_role in most_common_roles %}
+             					{% set role_play_rate = "%0.1f" | format((champ_role.roleTotalPlays/total_plays)*100) %}
+             					{% if loop.index == 1 %}
+			                  		<li class="nav-item role-tab" style="width:{{ 100/most_common_roles|length }}%" data-toggle="tooltip" data-html="true" title="<b>{{ champ_role.role }} ({{ role_play_rate }}%)</b>">
+			                   			<a class="nav-link role-nav-link active" id="{{ champ_role.role }}-" href="#{{ champ_role.role }}" data-toggle="tab">
+			                   				<div class="row">
+			                   					<div class="col text-center">
+				                    				<img class="role-icon" src="/static/imgs/lane_icons/{{ champ_role.role }}.png">
+				                    			</div>
+				                    		</div>
+			                    		</a>
+			                  		</li>
+			                	{% else %}
+			                  		<li class="nav-item role-tab" style="width:{{ 100/most_common_roles|length }}%" data-toggle="tooltip" data-html="true" title="<b>{{ champ_role.role }} ({{ role_play_rate }}%)</b>">
+			                    		<a class="nav-link role-nav-link" id="{{ champ_role.role }}-" href="#{{ champ_role.role }}" data-toggle="tab">
+			                   				<div class="row">
+			                   					<div class="col text-center">
+				                    				<img class="role-icon" src="/static/imgs/lane_icons/{{ champ_role.role }}.png">
+				                    			</div>
+				                    		</div>
+			                    		</a>
+			                  		</li>
+			                	{% endif %}
+		                	{% endfor %}
+	                	{% endif %}
+                	</ul>				
+				</div>
+			</div>			
+
+			<div class="chart-wrapper">
+				<div class="chart-title">
+				   <h4>Matchups</h4>
+				</div>
+				<div class="chart-stage">
+					{% if rank_stats[4] %}
+						{% for role_champ,matchups in rank_stats[4].items() %}
+							{% if loop.index > 1 %}
+								<div id="{{ role_champ }}-matchups" class="hidden role-matchups">
+							{% else %}
+								<div id="{{ role_champ }}-matchups" class="role-matchups">
+							{% endif %}
+									<div class="row">
+										<div class="col">
+											<h5>Strong Against</h5>
+										</div>
+									</div>
+									<table class="table table-hover matchups-table">
+										<thead>
+											<tr>
+												<td><b>Champ</b></td>
+												<td class="pi-des"><b>PI</b></td>
+												<td class="wra-des"><b>WRA</b></td>
+											</tr>
+										</thead>
+										<tbody>
+							    			{% for enemy_champ,champ_stats in matchups["strong_against"].items() %}
+							    				<tr>
+								    				<td>
+								    					<a data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ champ_stats['name'] }}</b>" class="matchups-champs-img" href="/{{ region }}/champ/{{ champ_stats['name'] }}"><img class="champ-table-img" src="http://ddragon.leagueoflegends.com/cdn/7.15.1/img/champion/{{ champ_stats['image'] }}" title="{{ champ_stats['name'] }}"></a>					
+								    				</td>
+								    				<td>
+								    					{{ '%0.2f'| format(champ_stats["perf_against"]/champ_stats["used_against"]) }}
+								    				</td>								    				
+								    				<td class="wr">
+								    					{{ '%0.2f'| format((champ_stats["wins_against"]/champ_stats["used_against"])*100) }}%
+								    				</td>									    					
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+									<hr />
+
+									<div class="row">
+										<div class="col">
+											<h5>Weak Against</h5>
+										</div>
+									</div>
+									<table class="table table-hover matchups-table">
+										<thead>
+											<tr>
+												<td><b>Champ</b></td>
+												<td class="pi-des"><b>PI</b></td>
+												<td class="wra-des"><b>WRA</b></td>
+											</tr>
+										</thead>
+										<tbody>
+							    			{% for enemy_champ,champ_stats in matchups["weak_against"].items() %}
+							    				<tr>
+								    				<td>
+								    					<a data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ champ_stats['name'] }}</b>" class="matchups-champs-img" href="/{{ region }}/champ/{{ champ_stats['name'] }}"><img class="champ-table-img" src="http://ddragon.leagueoflegends.com/cdn/7.15.1/img/champion/{{ champ_stats['image'] }}"></a>			
+								    				</td>
+								    				<td>
+								    					{{ '%0.2f'| format(champ_stats["perf_against"]/champ_stats["used_against"]) }}
+								    				</td>								    				
+								    				<td class="wr">
+								    					{{ '%0.2f'| format((champ_stats["wins_against"]/champ_stats["used_against"])*100) }}%
+								    				</td>									    					
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+					    		</div>
+						{% endfor %}
+					{% endif %}
+				</div>
+				<div class="chart-notes">
+				   Top 5 champions that are strongest/weakest when facing {{ name }}, ranked based on PI.
+				</div>
+			</div>
+
+			<div class="chart-wrapper">
+				<div class="chart-title">
+				   <h4>Best {{ region }} {{ name }} Players</h4>
+				</div>
+				<table class="table table-hover champ-players-table">
+					<thead>
+						<tr>
+							<td><b>Player</b></td>
+							<td class="rating-des"><b>Rating</b></td>
+							<td class="wr-des"><b>WR</b></td>
+						</tr>
+					</thead>
+					<tbody>
+						{% for player in players %}
+					    	{% if player.plays > 1 %}
+						    	<tr class="champ-players-list">
+						    		<td>
+						    			<a href="/{{ region }}/summoner/{{ player.basicInfo.name }}">{{ player.basicInfo.name }}</a>
+						    		</td>
+						    		<td class="player-rating">
+						    			{{ "%.2f" | format(player.performance/player.plays) }}
+						    		</td>
+						    		<td class="wr">
+						    			{{ "%.2f" | format((player.wins/player.plays)*100) }}%
+						    		</td>
+						    	</tr>
+						    {% endif %}
+					    {% endfor %}	
+					</tbody>
+				</table>
+				<div class="chart-notes">
+				   Ranked based on rating of player with {{ name }}
+				</div>
+			</div>
+
+			<div class="chart-wrapper">
+				<div class="chart-title">
+				   <h4>Similar Champions</h4>
+				</div>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<td>Champ</td>
+							<td>Roles</td>
+							<td>Tags</td>
+						</tr>
+					</thead>
+					<tbody>
+						{% for similar_champ in similar_champs %}
+							<tr class="similar-champs-row">
+								<td>
+									<a href="/{{ region }}/champ/{{ similar_champ.name }}" data-toggle="tooltip" data-placement="right" data-html="true" title="<b>{{ similar_champ.name }}</b>" class="matchups-champs-img">
+										<img class="champ-table-img" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/champion/{{ similar_champ.image }}" alt="{{ similar_champ.image }}">
+									</a>
+								</td>
+								{% if similar_champ.role2 %}
+									<td>{{ similar_champ.role1 }}/{{ similar_champ.role2 }}</td>
+								{% else %}
+									<td>{{ similar_champ.role1 }}</td>
+								{% endif %}
+								<td>{{ similar_champ.tag1 }}/{{ similar_champ.tag2 }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="chart-notes">
+				   Sorted based on role and the type of champion
+				</div>
+			</div>			
+		</div>
+
+
+		<div class="col-sm-9">
+			<div class="tab-content">
+				{% if most_common_roles %}
+					{% for cur_champ in most_common_roles %}
+						{% if loop.index == 1 %}
+				        	<div class="tab-pane active" id="{{ cur_champ.role }}">
+				        {% else %}
+				        	<div class="tab-pane" id="{{ cur_champ.role }}">
+				        {% endif %}
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="chart-wrapper">
+									<div class="chart-title">
+										<h4>{{ cur_champ.role }} Stats</h4>
+									</div>
+									<div class="chart-stage champ-role-stats">
+										<div class="row">
+			        						<div class="col-md-4">
+			                					<p>Role winrate</p>
+			        						</div>
+			        						<div class="col-md-8">
+			            						<div class="progress">
+			            							{% set winrate = '%0.1f'| format((cur_champ.roleTotalWins/cur_champ.roleTotalPlays)*100) %}
+			                						<div class="progress-bar bg-success" role="progressbar" style="width: {{ winrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ winrate }}%</div>
+			                					</div>
+			            					</div>
+			        					</div>
+			        					<div class="row">
+											<div class="main-chart">
+											</div>
+			        					</div>
+			        					<div class="row">
+			        						<div class="col-md-4">
+			                					<p>Role playrate</p>
+			        						</div>
+			        						<div class="col-md-8">
+			                					<div class="progress">
+			                					    {% set playrate = '%0.1f'| format((cur_champ.roleTotalPlays/total_plays)*100) %}
+			                						<div class="progress-bar" role="progressbar" style="width: {{ playrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ playrate }}%</div>
+			                							</div>
+			            						</div>
+			        					</div>
+			        					<div class="row">
+			        						<div class="col">
+				        						<div class="row">
+				        							<div class="col">
+				                						<h6>Stats overtime</h6>
+				                					</div>
+				        						</div>
+			        							<div class="col">
+													<ul class="nav nav-tabs">
+														<li class="nav-item">
+															<a class="nav-link active graph-tab" data-toggle="tab" href="#Playrate-{{ cur_champ.role }}">Role Playrate</a>
+														</li>
+														<li class="nav-item">
+															<a class="nav-link graph-tab" data-toggle="tab" href="#Rating-{{ cur_champ.role }}">Rating by Patch</a>
+														</li>
+														<li class="nav-item">
+															<a class="nav-link graph-tab" data-toggle="tab" href="#Winrate-{{ cur_champ.role }}">Winrate by Patch</a>
+														</li>
+														<li class="nav-item">
+															<a class="nav-link graph-tab" data-toggle="tab" href="#Winrate-duration-{{ cur_champ.role }}">Winrate by Duration</a>
+														</li>																
+													</ul>					        							
+													<div class="tab-content" id="stats-by-patch">
+													{% for metric,chart in rank_stats[1][cur_champ.role]["stats_chart"].items() %}
+														{% if metric == "Playrate" %}
+															<div id="{{ metric }}-{{ cur_champ.role }}" class="tab-pane active">
+														{% else %}
+															<div id="{{ metric }}-{{ cur_champ.role }}" class="tab-pane">
+														{% endif %}
+				                							<embed type="image/svg+xml" src={{ chart|safe }} />
+				                						</div>
+				                					{% endfor %}
+														<div id="Winrate-duration-{{ cur_champ.role }}" class="tab-pane">
+				                							<embed type="image/svg+xml" src={{ rank_stats[3][cur_champ.role]|safe }} />																	
+														</div>	
+				                					</div>
+				                				</div>
+				                			</div>
+			        					</div>
+					        		</div>
+									<div class="chart-notes">
+										This is a sample text region to describe this chart.
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="chart-wrapper">
+									<div class="chart-title">
+										<h4>Average game metrics</h4>
+									</div>
+									<div class="chart-stage champ-role-stats">
+										<table class="table table-sm">
+											<tbody>
+												<tr>
+													<td>Role rating</td>
+													<td class="champ-rating">{{ '%0.2f'| format(cur_champ.roleTotalRating/cur_champ.roleTotalPlays) }}
+													</td>
+												</tr>
+												<tr>
+				        							{% set role_kda = rank_stats[2][cur_champ.role] %}
+													<td>Role KDA</td>
+													<td class="kda">{{ '%0.2f'| format((role_kda["kills"]+role_kda["assists"])/role_kda["deaths"]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg CC Dealt</td>
+													<td class="cc-dealt">{{ '%0.2f'| format(cur_champ.roleCCDealt/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg DPG</td>
+													<td class="dpg">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["dpg"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg DMPG</td>
+													<td class="dmpg">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["dmpg"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg GPM</td>
+													<td class="gpm">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["gpm"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg CSPM</td>
+													<td class="cspm">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["cspm"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg Vision Rating</td>
+													<td class="vision">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["visScore"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+												<tr>
+													<td>Avg Objectives Rating</td>
+													<td class="objectives">{{ '%0.2f'| format(in_game_stats[cur_champ.role]["objScore"]/role_true_total_plays[cur_champ.role]) }}</td>
+												</tr>
+											</tbody>
+										</table>
+			            			</div>
+									<div class="chart-notes">
+										Average stats based on {{ region }} {{ name }} games.
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="chart-wrapper">
+									<div class="chart-title">
+										<h4>{{ cur_champ.role }} lane Strategy</h4>
+									</div>
+									<div class="chart-stage">
+	                        			<div class="container">   	                            	
+			        				    	<div class="row">
+	            						 		<div class="col-6">
+	            						 			<div class="row">
+	            						 				<div class="col">
+	            						 					<h5>Runes</h5>
+	            						 				</div>
+	            						 			</div>
+	            						 			<table class="table table-hover runes-table">
+            						 					<thead>
+            						 						<tr>
+            						 							<th>Rune Type</th>
+            						 							<th>Runes</th>
+            						 							<th class="pi-des">PI</th>
+            						 							<th>Use Rate</th>
+            						 						</tr>	                						 						
+            						 					</thead>
+	            						 				<tbody>
+															{% for rune_group in cur_champ.addons.runes %}
+																<tr>
+																	<td>{{ rune_group['type'] }}</td>
+																	<td>
+		                							   				{% for rune in rune_group["runes"] %}
+																			<img data-toggle="tooltip" data-placement="left" data-html="true" title="<b>{{ rune['name'] }}</b>: <em>{{ rune['des'] }}</em>" class="runes-img" src="/static/imgs/rune_icons/{{ rune['image'] }}.png" style="width:3.3rem">x{{ rune['count'] }}
+																	{% endfor %}
+																	</td>
+																	<td>{{ rune_group['performance'] }}</td>
+																	<td>{{ rune_group['use_rate'] }}%</td>
+																</tr>
+			                						    	{% endfor %}
+			                						    </tbody>
+	            						 			</table>
+	            						 		</div>
+												<div class="col-6" id="items-container">
+													<div id="items-table">
+				            						   	<div class="row">
+				            						   		<div class="col-4">
+				            						   			<h5>Items</h5>
+				            						   		</div>
+				            						   		<div class="col-8">
+																<form method="get" action="/static/item_sets/{{ champ_key }}SR.json">
+																	<button type="submit" class="btn btn-danger" id="import">Download Build</button>
+																</form>
+															</div>
+				            					    	</div>
+														<div class="row hidden text-center" id="item-set-inst">
+															<h5>
+																Go to your League of Legends folder and put downloaded file into 
+															</h5>
+															<h5>
+																<code>League of Legends\Config\Champions\{{ champ_key }}\Recommended\</code>
+															</h5>
+															<button type="button" id="return-to-items" class="btn btn-success">Ok</button>
+														</div>				            					    	
+														<table class="table table-responsive table-sm" id="items-table">
+														  <tbody>
+					           						    	{% for items_list in cur_champ.addons.items %}
+						           						    	<tr>
+																   	<td>{{ item_boxes[loop.index] }}</td>
+																   	{% for item,data in items_list.items() %}
+																   		<td data-toggle="tooltip" data-placement="left" data-html="true" title="<b>{{ data['name'] }}</b> ({{ data['cost'] }} gold): <em>{{ data['des'] }}</em>">
+																   			<img src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/item/{{ data['image'] }}" class="champ-items">
+																   		</td>
+																    {% endfor %}
+																</tr>
+														    {% endfor %}
+															</tbody>
+														</table>	
+													</div>
+													</div>	            							    	
+	            							    </div>
+			        				    	</div>
+			        				    	<hr />
+
+	            					    	<div id="paths-container" class="row">
+	            					    		<div class="col-7">
+		            						        <div id="skill-order-container">	            					    			
+				            						    <div class="row">
+				            						   		<div class="col">
+				            						   			<h5>Skillorder</h5>
+				            						   		</div>
+				            						   	</div>
+				            						   	<div class="row">
+															<table class="table table-responsive table-sm" style="border-collapse:separate">
+															  <tbody>
+															  	<tr>
+															  		<td>Q</td>
+							            						    {% for lvl,skill in cur_champ.addons.skillOrder.items() %}
+							            						   		{% if 1 == skill %}
+																	    	<td class="skill-lvl">{{ lvl }}</td>
+																	    {% else %}
+																	    	<td></td>
+																	    {% endif %}
+																    {% endfor %}
+															  	</tr>
+															  	<tr>
+															  		<td>W</td>
+							           						    	{% for lvl,skill in cur_champ.addons.skillOrder.items() %}
+							           						    		{% if 2 == skill %}
+																	    	<td class="skill-lvl">{{ lvl }}</td>
+																	    {% else %}
+																	    	<td></td>
+																	    {% endif %}
+																    {% endfor %}
+															  	</tr>
+															  	<tr>
+															  		<td>E</td>
+							            					    	{% for lvl,skill in cur_champ.addons.skillOrder.items() %}
+							            					    		{% if 3 == skill %}
+																	    	<td class="skill-lvl">{{ lvl }}</td>
+																	    {% else %}
+																	    	<td></td>
+																	    {% endif %}
+																    {% endfor %}						
+																  	</tr>
+																  <tr>
+															 		<td>R</td>
+							            					    	{% for lvl,skill in cur_champ.addons.skillOrder.items() %}
+							            					    		{% if 4 == skill %}
+																	    	<td class="skill-lvl">{{ lvl }}</td>
+																	    {% else %}
+																	    	<td></td>
+																	    {% endif %}
+																    {% endfor %}			
+															  	</tr>
+															  </tbody>
+															</table>	
+														</div>
+													</div>
+												</div>
+												<div class="col-5" id="items-container">
+													<div class="row">
+														<div class="col-6">
+				            							    <div id="summ-spells">
+				            						 			<div class="row">
+				            						 				<div class="col">
+				            						 					<h5>Summoner Spells</h5>
+				            						 				</div>
+				            						 			</div>
+				            						 			<table class="table table-sm attr-table">
+				            						 				<thead>
+				            						 					<tr>
+				            						 						<th>Spells</th>
+				            						 						<th class="pi-des">PI</th>
+				            						 						<th>WR</th>
+				            						 					</tr>
+				            						 				</thead>
+				            						 				<tbody>
+									            						{% for spell,info in cur_champ.addons.spells.items() %}
+					            						 					<tr>
+					            						 						<td>
+									            							{% for spell_data in info['spells'] %}
+																					<img data-toggle="tooltip" data-placement="left" data-html="true" title="<b>{{ spell_data['name'] }}</b>: <em>{{ spell_data['des'] }}</em>" class="attr-icons" src="http://ddragon.leagueoflegends.com/cdn/7.15.1/img/spell/{{ spell_data['image'] }}">
+									            							{% endfor %}
+									            								</td>
+									            								<td>
+									            									{{ "%0.1f" | format(info["perf"]/info["used"]) }}
+									            								</td>
+									            								<td>
+									            									{{ "%0.1f" | format((info["wins"]/info["used"])*100)}}%
+									            								</td>							
+					            						 					</tr>								         
+									                					{% endfor %}				            						
+				            						 				</tbody>
+				            						 			</table>
+				            						        </div>
+				            						    </div>
+				            						    <div class="col-6">
+			            						 			<div class="row">
+			            						 				<div class="col">
+			            						 					<h5>Mastery Keystone</h5>
+			            						 				</div>
+			            						 			</div>
+			            						 			<table class="table table-sm attr-table">
+			            						 				<thead>
+			            						 					<tr>
+			            						 						<th>Keystone</th>
+			            						 						<th class="pi-des">PI</th>
+			            						 						<th>WR</th>
+			            						 					</tr>
+			            						 				</thead>			            						 				
+			            						 				<tbody>
+																{% if cur_champ.addons.keystone|length > 0 %}
+								            						{% for ks,info in cur_champ.addons.keystone.items() %}
+				            						 					<tr>
+				            						 						<td data-toggle="tooltip" data-placement="left" data-html="true" title="<b>{{ info['info']['name'] }}</b>: <em>{{ info['info']['des'][0] }}</em>">
+									                							<img class="attr-icons" src="http://ddragon.leagueoflegends.com/cdn/{{ this_patch }}/img/mastery/{{ ks }}.png" title="{{ info['info']['name'] }}">
+									                						</td>
+									                						<td>
+									                							{{ "%0.1f" | format(info["perf"]/info["used"]) }}
+									                						</td>
+								            								<td>
+																				{{ "%0.1f" | format((info["wins"]/info["used"])*100) }}%
+								            								</td>	
+				            						 					</tr>					           							
+								                					{% endfor %}
+							                					{% endif %}			            						 			
+			            						 				</tbody>
+			            						 			</table>
+						                				</div>
+			            						    </div>
+			            						</div>
+		        						    </div>
+		        						</div>
+									</div>
+									<div class="chart-notes">
+										The items, spells, runes, skill order that the best performing {{ name }} use.
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							{% for rank_data in rank_stats[0][cur_champ.role] %}
+								{% if rank_data %}
+									<div class="col-sm-6 col-md-3">
+										<div class="chart-wrapper">
+											<div class="chart-title">
+												<h5>{{ rank_data["rank"] }}
+													<img src="/static/imgs/rank_icons/base-icons/{{ rank_data['rank_stats'].baseInfo.leagueTier }}.png" style="width:2.5rem" alt="{{ rank_data['rank_stats'].baseInfo.leagueTier }}">
+												</h5>
+											</div>
+											<div class="chart-stage">
+											{% if latest_longest_patch in rank_data["rank_stats"].patchStats %}
+											    <div class="row">
+									                <div class="col-md-4">
+									                    Winrate:
+									                </div>
+										            <div class="col-md-8">
+										           		<div class="progress">
+															{% set winrate = '%0.1f'| format((rank_data["total_wins"]/rank_data["total_plays"])*100) %}
+												            <div class="progress-bar bg-success" role="progressbar" style="width: {{ winrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ winrate }}%</div>
+										           		</div>
+										            </div>
+									       		</div>
+										        <div class="row">
+								                    <div class="col-md-4">
+								                        Playrate:
+								                    </div>
+								                    <div class="col-md-8">
+								                        <div class="progress">
+								                        	{% if rank_data["rank"] in total_games_by_rank %}
+								                        		{% if total_games_by_rank[rank_data["rank"]] > 0 %}
+											                		{% set playrate = '%0.1f'| format(
+											                			(rank_data["total_plays"]/total_games_by_rank[rank_data["rank"]])*100) %}
+											                		<div class="
+											                		progress-bar" role="progressbar" style="width: {{ playrate }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ playrate }}%</div>
+											                	{% endif %}
+								            				{% endif %}
+								            				{{ rank_data["rank_stats"].leagueTier }}
+								            			</div>
+								                    </div>
+										        </div>
+										        <div class="row">
+								                    <div class="col">
+								                    	{% if rank_data["rank_stats"].deaths > 0 %}
+								                    		{% set d = rank_data["rank_stats"].deaths %}
+								                    	{% else %}
+								                    		{% set d = 1 %}	
+								                    	{% endif %}
+								                        KDA: {{ '%0.2f'| format((rank_data["rank_stats"].kills+rank_data["rank_stats"].assists)/d) }}
+								                    </div>
+										        </div>
+										        <div class="row">
+										        	<div class="col">
+										        		CSPM: {{ '%0.2f'| format(rank_data["rank_stats"].cspm/rank_data["total_plays"]) }}
+										        	</div>
+										        </div>				
+										        <div class="row">
+										        	<div class="col">
+										        		GPM: {{ '%0.2f'| format(rank_data["rank_stats"].gpm/rank_data["total_plays"]) }}
+										        	</div>
+										        </div>			
+										        <div class="row">
+										        	<div class="col">
+										        		Rating: <span class="champ-rating">{{ '%0.2f'| format(rank_data["total_rating"]/rank_data["total_plays"]) }}</span>
+										        	</div>
+										        </div>									        	 
+										    {% endif %}       
+											</div>
+											<div class="chart-notes">
+												Last 6 patches
+											</div>
+										</div>
+									</div>
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+					{% endfor %}
+				{% endif %}
+				</div>
+		</div>
+	</div>
+	</div>
+	<script type="text/javascript">
+		$("#nav-regions").val("{{ region }}")
+	</script>
+{% endblock %}

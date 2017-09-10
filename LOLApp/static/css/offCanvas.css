@@ -1,0 +1,171 @@
+/*
+ * Style tweaks
+ * --------------------------------------------------
+ */
+html,
+body {
+  overflow-x: hidden; /* Prevent scroll on narrow devices */
+}
+body {
+  padding-top: 55px;
+}
+footer {
+  padding: 30px 0;
+}
+
+.tips{
+    font-size: .85rem !important;
+}
+
+.progress-bar{
+  height: 1.35rem;
+  font-size: .7rem;
+  line-height: 1.35rem;
+  text-align: left;
+}
+
+.main-chart{
+  width: 17rem;
+}
+
+.champ-des{
+  padding-top: .5rem;
+}
+
+.card-img-top{
+  margin: .85rem;
+}
+
+.card-header, .card-footer{
+  background-color: #F3F4F8;
+}
+#champ-main-card{
+  background-color: #ECEFF6;
+}
+.progress{
+    border-radius: 0px;
+}
+
+.role-icon{
+  width: 3rem;
+}
+
+.champ-items{
+  width: 2.2rem;
+}
+
+.attr-icons{
+  width: 2.5rem;
+}
+
+.attr-table th{
+  font-size: .9rem;
+}
+
+.matchups-table td, th{
+  padding: .4rem;
+}
+
+.similar-champs-row td{
+  font-size: .9rem;
+}
+
+.jumbotron {
+  background:transparent;
+  height: 18rem;
+  padding-bottom: 0;
+  padding-top: 2rem;
+
+  background-color: #17234E;
+  min-height: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  -webkit-background-size: cover;
+  background-size: cover;
+}
+
+.rune-images{
+  padding: 0;
+}
+
+.banner-text{
+  color: white;
+  text-shadow: 1.5px 1.5px 0px #1C2331;
+}
+
+.skill-lvl{
+  background-color: #0d47a1;
+  color: white;
+}
+
+td{
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.champ-table-img{
+  width: 2.5rem;
+  border-radius: 50%;
+}
+
+.champ-base-stats td{
+  font-size: .9rem;
+}
+
+.compare-champ-icon{
+  width: 3rem; 
+  border-radius:50%;
+}
+
+/*
+ * Off Canvas
+ * --------------------------------------------------
+ */
+@media screen and (max-width: 768px) {
+  .row-offcanvas {
+    position: relative;
+    -webkit-transition: all .25s ease-out;
+         -o-transition: all .25s ease-out;
+            transition: all .25s ease-out;
+  }
+
+  .row-offcanvas-right {
+    right: 0;
+  }
+
+  .row-offcanvas-left {
+    left: 0;
+  }
+
+  #sidebar{
+    width:90%;
+    margin:0 auto;
+  }
+  .row-offcanvas-left
+  .sidebar-offcanvas {
+    left: -100%; /* 12 columns */
+  }
+
+  .row-offcanvas-left.active
+  .sidebar-offcanvas {
+    left: -50%; /* 6 columns */
+  }
+
+  .row-offcanvas-right.active {
+    right: 50%; /* 6 columns */
+  }
+
+  .row-offcanvas-left.active {
+    left: 50%; /* 6 columns */
+  }
+
+  .jumbotron{
+    height: 24rem;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  #stats-by-patch{
+    height: 8.5rem;
+  }
+}

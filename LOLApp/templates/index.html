@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/xregexp.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
+    <script src="https://use.fontawesome.com/5a5fd64e5c.js"></script>
+    <!-- Optional theme -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="{{
+      url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="shortcut icon" type="image/png" href="/static/imgs/orb-icon-16.png" class="rounded-circle"/>
+    <title>Scryer's Analytics</title>
+  </head>
+  <body background="/static/imgs/background.jpg">
+        <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+          <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse" data-target="#navLinks" aria-controls="navLinks" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">
+            <img src="/static/imgs/orb.png" width="30" height="30" alt="scrying-orb-icon" class="rounded-circle">
+            Scryer's Analytics
+          </a>
+          <div class="collapse navbar-collapse" id="navLinks">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+              <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('teams_stats') }}">Team Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('all_champs_stats') }}">Champ Stats</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="container" id="home-content">
+            <div id="landing">
+                <div id="title">
+                    <h1 style="color:white">Scryer's Analytics</h1>
+                </div>
+                <div class="row">
+                    <form id="search-form"  class="my-2 my-lg-0" action="{{ url_for('get_data') }}" method="POST">
+                        <div class="row" id="main-search-cont">
+                            <div class="col">
+                                <div class="input-group">
+                                    <input type="text" class="form-control mr-sm-2" name="name" maxlength="16" id="main-search" list="datalist" size="32" placeholder="Summoner or Champ name..." autocomplete="off">
+                                    <datalist id="datalist"></datalist>
+                                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="search-button">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                {% with messages = get_flashed_messages() %}
+                                    {% if messages %}
+                                        <ul class=flashes style="padding:0; margin:2px">
+                                        {% for message in messages %}
+                                          <li id="invalidName">{{ message }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div id="region-select" class="btn-group" data-toggle="buttons">
+                                  <label class="btn btn-primary region">
+                                    <input type="radio" name="region" id="NA" autocomplete="off" value="NA" checked>NA
+                                  </label>
+                                  <label class="btn btn-primary region">
+                                    <input type="radio" name="region" id="EUW" autocomplete="off" value="EUW">EUW
+                                  </label>
+                                  <label class="btn btn-primary region">
+                                    <input type="radio" name="region" id="EUNE" autocomplete="off" value="EUNE">EUNE
+                                  </label>
+                                  <label class="btn btn-primary region">
+                                    <input type="radio" name="region" id="BR" autocomplete="off" value="BR">BR
+                                  </label>
+                                  <label class="btn btn-primary region">
+                                    <input type="radio" name="region" id="KR" autocomplete="off" value="KR">KR
+                                  </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row hidden" id="chart-loading-bar">
+              <div id="loading-col" class="col-2 offset-5">
+                <i class="fa fa-cog fa-spin fa-5x fa-fw" style="color: white;"></i>
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+
+            <div class="card-group" id="opening-tables">
+              {% for group in region_data %}
+                <div class="card">
+                  <div class="card-block">
+                    <table class="table table-hover table-sm" id="homepage-opening-tables-{{ loop.index }}">
+                      {% if group is mapping %}
+                        <caption class="table-title">Best performing Players - <span class="region-title">{{ region }}</span></caption>
+                        <thead class="thead-inverse">
+                          <tr>
+                            <th>Summoner</th>
+                            <th>Rank</th>
+                            <th>Rating</th>
+                            <th>Winrate</th>
+                          </tr>
+                        </thead>
+                        <tbody id="top-5-players">
+                        {% for player,data in group.items() %}
+                          <tr>
+                            <td><a href="{{ region }}/summoner/{{ player }}">{{ player }}</a></td>
+                            {% if data["rank"] %}
+                              <td>{{ data["rank"] }}</td>
+                            {% endif %}
+                            <td class="player-rating">{{ data["player"]["rating"] }}</td>
+                            <td>{{ data["player"]["winrate"] }}%</td>
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                      {% else %}
+                        {% if loop.index == 1 %}
+                          <caption class="table-title">Best performing Champions - <span class="region-title">{{ region }}</span></caption>
+                        {% else %}
+                          <caption class="table-title">Best off-meta Picks - <span class="region-title">{{ region }}</span></caption>
+                        {% endif %}                        
+                        <thead class="thead-inverse">
+                          <tr>
+                            <th>Role</th>
+                            <th>Champ</th>
+                            <th>Rating</th>
+                            <th>Winrate</th>
+                          </tr>
+                        </thead>
+                        {% if loop.index == 1 %}
+                          <tbody id="top-5-champs">
+                        {% else %}
+                          <tbody id="top-5-offmeta">
+                        {% endif %}
+                          {% for champ in group %}
+                            <tr>
+                              <td>{{ champ["role"] }}</td>
+                              <td><a href="/{{ region }}/champ/{{ champ['name'] }}">{{ champ["name"] }}</a></td>
+                              <td class="champ-rating">{{ champ["rating"] }}</td>
+                              <td class="wr">{{ champ["wr"] }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>                        
+                      {% endif %}
+                    </table>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+      </div>
+      <footer class="footer">
+        <div class="container">
+          <span>Scryer's Analytics isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.</span>
+        </div>
+      </footer>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.13/js/dataTables.bootstrap4.min.js"></script>
+      <script>
+        $("#homepage-opening-tables-1").DataTable({searching: false, info: false, paging: false});
+        $("#homepage-opening-tables-2").DataTable({searching: false, info: false, paging: false});
+        $("#homepage-opening-tables-3").DataTable({searching: false, info: false, paging: false});
+        var label = $("#{{ region }}").parent();
+        label.toggleClass("active")
+        console.log(label);
+      </script>
+    </body>
+</html>

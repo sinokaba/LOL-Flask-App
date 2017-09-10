@@ -1,0 +1,274 @@
+
+ul, li{
+    text-decoration: none;
+    list-style-type: none;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+table ul{
+    padding: 0;
+}
+
+table>tbody .hidden-row {
+   padding: 0 8px;
+}
+
+#match-history{
+    padding: 0;
+    line-height: 1.15;
+}
+
+#invalidName{
+    color: red;
+}
+
+#player-wrapper{
+    height: 15rem;
+    color: white;
+    margin-top: 3rem;    
+}
+
+#main-content-push{
+  overflow:auto;
+  padding-bottom:150px; /* this needs to be bigger than footer height*/
+}
+
+#profile-bottom-info{
+    margin-top: 3rem
+}
+
+#player-main-content{
+    margin-top: 1.5rem;
+}
+
+#champ-abilities td{
+    padding: .2rem !important;
+}
+
+.highlight-game{
+    color: white;
+    background-color: #ffbb33 !important;
+}
+.player-rating{
+    font-weight: bold;
+}
+
+.champ-icon{
+    width: 90px;
+}
+
+.details-summs-row{
+    padding: 0;
+}
+.details-item-img{
+    padding: 0;
+}
+
+.details-item-img img{
+    width: 1.3rem;
+}
+
+.match-info{
+    padding: 0;
+}
+
+.item-img img{
+    width: 2.2rem;
+}
+
+.summ-img img{
+    width: 2.7rem;
+}
+
+.summ-img{
+    padding:  0;
+}
+
+.accessories img{
+    width:2.5rem;
+    border-radius: 50%;
+}
+
+.profile-main-text{
+    margin-top: 40%;
+}
+
+.profile-text{
+    text-shadow: 2.5px 2px 0px black;
+}
+
+
+.navbar, .footer{
+    background-color: #F3F4F8;
+    color: #2c3646;
+}
+
+.content-title{
+    color: #0d47a1;
+}
+
+.mr-3{
+    margin-right:3rem !important;
+}
+
+.above{
+    color: rgba(0, 150, 136, 1);
+}
+
+.amazing{
+    color: rgba(63, 81, 181, 1);
+}
+
+.below{
+    color: rgba(244, 67, 54, 1);
+}
+
+.card-img-top{
+    margin: 0 auto;
+}
+
+.hidden{
+    display: none;
+}
+
+.team-stats td{
+    border: 0;
+}
+
+.blue-team table{
+    margin: 0;
+}
+
+.team-stats td{
+    font-size: .8rem;
+}
+
+.base-stats{
+    line-height:.65;
+    font-size: .85rem;
+}
+
+.ability{
+    width: 2.5rem;
+}
+
+.VICTORY-table-overview{
+    color: #007E33;
+}
+
+.DEFEAT-table-overview{
+    color: #CC0000;
+}
+
+.VICTORY{
+    background-color: #007E33;
+    margin: 0;
+}
+
+.DEFEAT{
+    background-color: #CC0000;
+    margin: 0;
+}
+
+.match-details-header{
+    color: white;
+    background-color: #2E2E2E;
+}
+
+.match{
+    background-color: rgba(158, 158, 158, 0.1);
+}
+
+.match:hover{
+    background-color: rgba(158, 158, 158, 0.3); 
+}
+
+.match-details-summs img{
+    width: 1.2rem;
+}
+
+.champ-players-list td{
+    font-size: .8rem;
+}
+
+.role-nav-link.active{
+    border-color: #0d47a1 !important;
+    background-color: #2E2E2E !important;
+}
+
+.graph-tab{
+    padding: 0;
+}
+
+.push-footer {
+  position: relative;
+  margin-top: -150px; /* negative value of footer height */
+  height: 150px;
+  clear:both;
+  padding-top:20px;
+}
+
+.champ-role-stats{
+    height: 24rem;
+}
+
+.runes-table td, th{
+    padding: 0;
+}
+
+.runes-table th{
+    font-size: .9rem;
+}
+
+.role-nav-link{
+    padding: .6rem;
+}
+
+/* xs < 768 */
+ @media screen and (max-width: 767px) {
+    th, td {
+        font-size: 0.9em;
+    }
+    #home-content{
+        padding-bottom: 20px;
+    }
+    .footer{
+        font-size: 8px !important;
+    }
+
+}
+/* sm */
+ @media screen and (min-width: 768px) {
+    th, td {
+        font-size: 1em;
+    }
+    .footer{
+      line-height: 25px; /* Vertically center the text there */
+    }
+}
+/* md */
+ @media screen and (min-width: 992px) {
+    th, td {
+        font-size: 1.2em;
+    }
+    .team-stats th{
+        font-size: 1em !important;
+    }
+    .role-tab{
+        font-weight: 500;
+        font-size: 1.2rem;
+    }
+}
+/* lg */
+ @media screen and (min-width: 1200px) {
+    th, td {
+        font-size: 1.3em;
+    }
+    .team-stats th{
+        font-size: 1.1em !important;
+    }
+}

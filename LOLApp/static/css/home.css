@@ -1,0 +1,81 @@
+body {
+  /* Margin bottom by footer height */
+	margin-bottom: 50px;
+}
+
+.footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer here */
+	height: 50px;
+	background-color: #f5f5f5;
+	font-size: 10px !important;
+	text-align: center;
+}
+
+.footer > .container {
+	padding-right: 15px;
+	padding-left: 15px;
+}
+
+#main-search-cont{
+	margin-bottom: .5rem
+}
+
+h1{
+	text-align: center;
+}
+
+table{
+	font-size: .65rem;
+}
+
+td{
+	font-weight: 500;
+}
+
+.table-wrapper{
+	border: 1.5px solid black;
+}
+
+.table-title{
+	text-align: center;
+	caption-side: top;
+	color: #428bca;
+    font-weight: bold;
+	font-size: 1rem;
+}
+
+.good{
+	color: green;
+}
+
+.bad{
+	color: red;
+}
+
+#opening-tables{
+	background-color: rgba(255, 255, 255, 0.65);
+	margin-top: 12px;
+}
+
+#landing{
+	margin: 0 auto;
+	padding: 40px 15px 0;
+}
+
+#search-form{
+	margin: 0 auto;
+	max-width: 350px;
+}
+
+#title{
+	margin: 0 auto;
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+#profileIcon{
+	margin-top: 25px;
+}
