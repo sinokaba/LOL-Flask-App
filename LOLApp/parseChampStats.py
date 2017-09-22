@@ -13,7 +13,7 @@ def get_global_avg(all_champ_data):
 		#print("t plays: ", role_champ.roleTotalRating, " role: ", role_champ.role)
 		overall_rank_stats["laning"] += role_champ.laning
 		overall_rank_stats["rating"] += role_champ.roleTotalRating
-		for league_champ in role_champ.stats_by_league:
+		for league_champ in role_champ.rank_stats:
 			game_dt = _pickle.loads(league_champ.patchStats)
 			for patch,stats in game_dt.items():
 				total_plays += stats["plays"]
@@ -68,7 +68,7 @@ def get_best_build(items_list, role_plays, role, champ_key):
 	get_boots(items_list)
 	get_core(items_list)
 	build_cont = []
-	build_categories = ["start", "consumables", "core", "boots", "early_ahead", "early_behind", "situational"]
+	build_categories = ["start", "consumables", "core", "boots", "early", "situational"]
 	filter_items(items_list, "late", role_plays*.2, limit)
 	filter_items(items_list, "start", role_plays*.2, limit)
 	for item_categ in build_categories:
@@ -194,7 +194,7 @@ def filter_items(build, stage, role_plays, limit):
 			del stage_items[core_item_2]		
 		build["situational"] = {}
 		for item, stats in stage_items.items():
-			if(item not in build["core"] and item not in build["early_behind"] and item not in build["early_ahead"]):
+			if(item not in build["core"] and item not in build["early"]):
 				build["situational"][item] = stage_items[item]
 		del build[stage]
 	else:
@@ -253,25 +253,13 @@ def filter_attribute(data, num, att=None):
 	return data
 
 def get_core(build):
-	if(len(build["early_ahead"]) > 0):
-		item = max(build["early_ahead"], key=lambda item:build["early_ahead"][item]["rating"]/build["early_ahead"][item]["used"])
+	if(len(build["early"]) > 0):
+		item = max(build["early"], key=lambda item:build["early"][item]["rating"]/build["early"][item]["used"])
 		temp = {}
-		temp[item] = build["early_ahead"][item]
+		temp[item] = build["early"][item]
 		if(item in build["late"]):
 			del build["late"][item]
-		build["early_ahead"] = temp
-	if(len(build["early_behind"]) > 0):	
-		item = max(build["early_behind"], key=lambda item:build["early_behind"][item]["rating"]/build["early_behind"][item]["used"])
-		temp = {}
-		temp[item] = build["early_behind"][item]
-		if(item in build["late"]):
-			del build["late"][item]
-		if(item in build["early_ahead"]):
-			build["early_ahead"] = []
-			build["core"] = temp
-			build["early_behind"] = []
-		else:		
-			build["early_behind"] = temp
+		build["early"] = temp
 	if(len(build["jung_items"]) > 0):
 		best_jung_item = max(build["jung_items"], key=lambda item:build["jung_items"][item]["rating"]/build["jung_items"][item]["used"])
 		build["core"][best_jung_item] = build["jung_items"][best_jung_item]
@@ -284,7 +272,7 @@ def get_core(build):
 	del build["jung_items"]
 	del build["vis_items"]
 	del build["attk_speed_items"]
-	#build["early_ahead"] = temp
+	#build["early"] = temp
 
 def get_skill_order(skills_list, champ):
 	temp = {}

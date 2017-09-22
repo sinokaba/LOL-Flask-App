@@ -19,7 +19,7 @@ from geolite2 import geolite2
 """
 
 riot_api = APICalls()
-global_avg = get_global_avg(ChampOverallStatsByRole.select())
+global_avg = get_global_avg(ChampStatsByRole.select())
 rank_tiers = {"diamondPlus":"Diamond Plus", "gold":"Gold", "platinum":"Platinum", "siver":"Silver Below", "bronze":"Silver Below"}
 
 @app.before_request
@@ -128,16 +128,12 @@ def get_champ(name, region):
 		((ChampBase.tag1 == champ_basic.tag1) & (ChampBase.tag2 == champ_basic.tag2))
 		)
 		)[:4]
-	players = PlayerRankStats.select(PlayerRankStats, PlayerBasic).join(PlayerBasic).switch(PlayerRankStats).join(ChampBasic).where(
-		PlayerBasic.region == region,
-		ChampBasic.champId == champ_id
-		).aggregate_rows()
 	print("total games: ", GamesVisited.select().count())
 	champ_basic.statsRanking = _pickle.loads(champ_basic.statsRanking)
 	print(champ_basic.statsRanking)
 	total_games = GamesVisited.select().join(StatsBase).where(StatsBase.region == "NA").count()
 	print("total games this patch: ", total_games)
-	champ_overall = ChampOverallStats.get(ChampOverallStats.region == region, ChampOverallStats.champId == champ_id)
+	champ_overall = ChampOverallStats.select().join(ChampBase).where(ChampOverallStats.region == region, ChampBase.champId == champ_id).get()
 	tips = _pickle.loads(champ_basic.tips)
 	#enemy_tips = _pickle.loads(champ_basic.enemyTips)[0]
 	#print("img: ", champ.image)
@@ -160,16 +156,10 @@ def get_champ(name, region):
 	"""
 	min_plays = total_plays*.05
 	print("total plays: ", total_plays, " minimum number of plays: ", min_plays)
-	champ_roles_q = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).switch(ChampStatsByRank).join(StatsBase).where(
-		(ChampStatsByRank.champId == champ_id) & 
-		(StatsBase.region == region) & 
-		(ChampOverallStatsByRole.roleTotalPlays > min_plays)).order_by(ChampOverallStatsByRole.roleTotalPlays.desc())
-
-	champ_roles_q2 = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).switch(ChampStatsByRank).join(StatsBase).where(
-		(ChampStatsByRank.champId == champ_id) & 
-		(StatsBase.region == region))
-	for role in champ_roles_q2:
-		print("r: ", role.role, " plays: ", role.roleTotalPlays)
+	champ_roles_q = ChampStatsByRole.select().join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+		(ChampBase.champId == champ_id) & 
+		(ChampOverallStats.region == region) & 
+		(ChampStatsByRole.roleTotalPlays > min_plays)).order_by(ChampStatsByRole.roleTotalPlays.desc())
 
 	most_common_roles = []
 	roles_added = []
@@ -199,7 +189,10 @@ def get_champ(name, region):
 	real_total_plays = 0
 	roles_added = []
 	role_true_total_plays = {}
-	champs_by_tier = ChampStatsByRank.select().join(StatsBase).where(StatsBase.region == region, ChampStatsByRank.champId == champ_id)
+	champs_by_tier = ChampStatsByRank.select().join(ChampStatsByRole).switch(ChampStatsByRole).join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+		ChampOverallStats.region == region, 
+		ChampBase.champId == champ_id
+		)
 	for role_champ in champs_by_tier:
 		kills += role_champ.kills
 		deaths += role_champ.deaths
@@ -212,22 +205,23 @@ def get_champ(name, region):
 		total_obj += role_champ.gameStats["objScore"]
 		total_cspm += role_champ.cspm
 		total_gpm += role_champ.gpm
-		if(role_champ.overallStats.role not in in_game_stats):
-			role_true_total_plays[role_champ.overallStats.role] = 0
+		role = role_champ.roleStats.role
+		if(role not in in_game_stats):
+			role_true_total_plays[role] = 0
 			if(role_champ.gameStats is not None):
 				role_champ.gameStats["cspm"] = role_champ.cspm
 				role_champ.gameStats["gpm"] = role_champ.gpm
-				in_game_stats[role_champ.overallStats.role] = role_champ.gameStats
+				in_game_stats[role] = role_champ.gameStats
 		else:
-			in_game_stats[role_champ.overallStats.role]["dmpg"] += role_champ.gameStats["dmpg"]
-			in_game_stats[role_champ.overallStats.role]["dpg"] += role_champ.gameStats["dpg"]
-			in_game_stats[role_champ.overallStats.role]["visScore"] += role_champ.gameStats["visScore"]
-			in_game_stats[role_champ.overallStats.role]["objScore"] += role_champ.gameStats["objScore"]
-			in_game_stats[role_champ.overallStats.role]["cspm"] += role_champ.cspm
-			in_game_stats[role_champ.overallStats.role]["gpm"] += role_champ.gpm
+			in_game_stats[role]["dmpg"] += role_champ.gameStats["dmpg"]
+			in_game_stats[role]["dpg"] += role_champ.gameStats["dpg"]
+			in_game_stats[role]["visScore"] += role_champ.gameStats["visScore"]
+			in_game_stats[role]["objScore"] += role_champ.gameStats["objScore"]
+			in_game_stats[role]["cspm"] += role_champ.cspm
+			in_game_stats[role]["gpm"] += role_champ.gpm
 		patch_stats = _pickle.loads(role_champ.patchStats)
 		for patch,patch_stat in patch_stats.items():
-			role_true_total_plays[role_champ.overallStats.role] += patch_stat["plays"]
+			role_true_total_plays[role] += patch_stat["plays"]
 
 	true_total_plays = 0
 	for role,plays in role_true_total_plays.items():
@@ -337,7 +331,7 @@ def load_champ_details(most_common_roles, t_plays, champ_key):
 		patch_stats = patch_stats_cum[role]
 		r_stats = rank_stats[role] 
 		wins_by_length = {}
-		for rank in champ_role.stats_by_league:
+		for rank in champ_role.rank_stats:
 			tier = rank.baseInfo.leagueTier
 			print("most role rank: ", tier)
 			rank.patchStats = _pickle.loads(rank.patchStats)
@@ -414,9 +408,9 @@ def get_additional_champ():
 	champ_name = request.args.get('name', None, type=str)
 	region = request.args.get('region', "NA", type=str)
 	champ_data_dict = model_to_dict(ChampBase.get(ChampBase.name == champ_name))
-	champ_stats_overall_dict = model_to_dict(ChampOverallStats.get(
-		ChampOverallStats.champId == champ_data_dict["champId"], 
-		ChampOverallStats.region == region))
+	champ_stats_overall_dict = model_to_dict(ChampOverallStats.select().join(ChampBase).where(
+		ChampBase.champId == champ_data_dict["champId"], 
+		ChampOverallStats.region == region)).get()
 	champ_stats_by_rank = ChampStatsByRank.select().join(StatsBase).where(
 		ChampStatsByRank.champId == champ_data_dict["champId"],
 		StatsBase.region == region
@@ -469,16 +463,19 @@ def get_all_champs():
 """
 def region_overall_stats(region):
 	num_games = GamesVisited.select().join(StatsBase).where(StatsBase.region == region).count()
-	champ_data = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).join(StatsBase).where(
-		StatsBase.region == region, ChampOverallStatsByRole.roleTotalPlays > 0).aggregate_rows().order_by(
-		(ChampOverallStatsByRole.roleTotalRating/ChampOverallStatsByRole.roleTotalPlays).desc())
+	champ_data = ChampStatsByRole.select(ChampStatsByRole, ChampStatsByRank).join(ChampStatsByRank).join(StatsBase).where(
+		StatsBase.region == region, ChampStatsByRole.roleTotalPlays > 0).aggregate_rows().order_by(
+		(ChampStatsByRole.roleTotalRating/ChampStatsByRole.roleTotalPlays).desc())
 	champs_basic = ChampBase.select()
+	top_5_players = {}
+	top_5_champs = []
+	top_5_offmeta_champs = []
+	for i in range(5):
+		top_5_players[i] = {"rank": "Unknown", "player": {"rating":1, "winrate":50}}
+	"""
 	player_data = PlayerRankStats.select().join(PlayerBasic).where(
 		PlayerBasic.region == region).order_by((PlayerRankStats.performance/PlayerRankStats.plays).desc())
 	print("num players: ", player_data.count())
-	top_5_champs = []
-	top_5_offmeta_champs = []
-	top_5_players = {}
 	for player in player_data:
 		if(player.plays >= 15 and player.basicInfo.rank is not None):
 			if(len(top_5_players) < 5):
@@ -494,6 +491,7 @@ def region_overall_stats(region):
 									}
 			else:
 				break
+	"""
 	for champion in champ_data:
 		#if(champion.addons is not None):
 			#print("items: ", _pickle.loads(champion.addons.runes))
@@ -502,11 +500,11 @@ def region_overall_stats(region):
 			#print("champ t plays: ", champion.roleTotalPlays)
 			rating = round(champion.roleTotalRating/champion.roleTotalPlays, 2)
 			winrate = round((champion.roleTotalWins/champion.roleTotalPlays)*100, 2)
-			champ_id = champion.stats_by_league[0].champId
-			champ_total_plays = ChampOverallStats.get(ChampOverallStats.champId == champ_id, ChampOverallStats.region == region).totalPlays
+			champ_id = champion.overall.champ.champId
+			champ_total_plays = ChampOverallStats.select().join(ChampBase).where(ChampBase.champId == champ_id, ChampOverallStats.region == region).get().totalPlays
 			#print(ChampBase.select().count())
 			name = ChampBase.get(ChampBase.champId == champ_id).name
-			#print("name: ", name)
+			print("name: ", name, " role: ", champion.role)
 			if("Bot" in champion.role):
 				champion.role = champion.role.split(" ")[1]
 			if((champion.roleTotalPlays >= num_games*.017) and len(top_5_champs) < 5):

@@ -25,10 +25,10 @@ URL = {
 
 API_VERSION = '3'
 
-CURRENT_PATCH = '7.16.1'
-LAST_PATCH = '7.15.1'
+CURRENT_PATCH = '7.17.1'
+LAST_PATCH = '7.16.1'
 
-API_KEY = 'RGAPI-db236f3d-f586-4bfe-bba3-ed49d8196590'
+API_KEY = 'RGAPI-83a34905-bcde-4b14-99a1-9ef2d91c1abc'
 
 PLATFORMS = {
 	"NA": 'NA1',
@@ -36,7 +36,12 @@ PLATFORMS = {
 	"EUNE": 'EUN1',
 	"KR": 'KR',
 	'RU': 'RU',
-	"BR": "BR1"
+	"BR": "BR1",
+	"JP": "JP1",
+	"TR": "TR1",
+	"OC": "OC1",
+	"LAN": "LA1",
+	"LAS": "LA2"
 }
 
 SPELLS = {

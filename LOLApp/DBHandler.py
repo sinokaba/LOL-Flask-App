@@ -225,12 +225,14 @@ class DBHandler:
 			)
 		return None			
 
-	def create_champ_overall_stats(self, region, cur_champ_d):
-		overall_q = ChampOverallStats.select().where(
+	def create_champ_overall_stats(self, region, cur_champ_d, champ_info):
+		print("checking overall of: ", champ_info.champId)
+		overall_q = ChampOverallStats.select().join(ChampBase).where(
 			ChampOverallStats.region == region,
-			ChampOverallStats.champId == cur_champ_d.champ_id
+			ChampBase.champId == champ_info.champId
 			)
 		if(not overall_q.exists()):
+			print("creating overall for: ", champ_info.name)
 			return ChampOverallStats.create(
 					totalRatingByPatch = cPickle.dumps(cur_champ_d.patch_rating),
 					totalPlaysByPatch = cPickle.dumps(cur_champ_d.patch_plays),
@@ -241,8 +243,8 @@ class DBHandler:
 					totalBans = cur_champ_d.t_bans,
 					totalPlays = cur_champ_d.t_plays,
 					region = region,
-					champId = cur_champ_d.champ_id
-				).get()
+					champ = champ_info
+				)
 		else:
 			old_data = overall_q.get()
 			old_data.totalPlaysByPatch = cPickle.dumps(self.update_patch_stats(cPickle.loads(old_data.totalPlaysByPatch), cur_champ_d.patch_plays))
@@ -254,22 +256,22 @@ class DBHandler:
 			old_data.totalBans += cur_champ_d.t_bans
 			old_data.totalPlays += cur_champ_d.t_plays			
 			old_data.save()	
-		return overall_q.get()	
+			return overall_q.get()	
 
-	def create_champ_role_stats(self, stats, role, this_patch, league_tier):
-		#print("creating overall: id ", cur_champ_d.champ_id, " role: ", role)
+	def create_champ_role_stats(self, stats, role, this_patch, league_tier, champ_overall):
+		print("creating role stats: champ ", champ_overall.champ.name, " role: ", role)
 		#print(overall_obj, overall_obj.totalWins)
-		return ChampOverallStatsByRole.create(
+		return ChampStatsByRole.create(
 				role = role,
-				roleCCDealt = stats["cc_dealt"],
 				roleTotalPlays = stats["t_plays"],
 				roleTotalWins = stats["t_wins"],
 				roleTotalRating = stats["t_rating"],
 				laning = stats["laning"],
-				addons = self.create_champ_addons(stats, league_tier)
+				addons = self.create_champ_addons(stats, league_tier),
+				overall = champ_overall
 			)
 
-	def create_champ_rank_stats(self, contribution, rank_stats, champ_d, base, this_patch, role, role_overall):
+	def create_champ_rank_stats(self, contribution, rank_stats, champ_d, base, this_patch, role_stats):
 		#print("creating rank stats, role: ", role)
 		ChampStatsByRank.create(
 			gameStats = cPickle.dumps(contribution),
@@ -278,11 +280,11 @@ class DBHandler:
 			deaths = rank_stats["kda"]["deaths"],
 			assists = rank_stats["kda"]["assists"],
 			cspm = rank_stats["cspm"],
+			ccDealt = rank_stats["cc_dealt"],
 			gpm = rank_stats["gpm"],
 			resultByTime = cPickle.dumps(rank_stats["game_result"]),
-			champId = champ_d.champ_id,
 			baseInfo = base,
-			overallStats = role_overall
+			roleStats = role_stats
 		)
 
 	def add_players_db(self, champ_basic_q, region, players):
@@ -373,56 +375,60 @@ class DBHandler:
 	def add_champ_stats(self, champs_list, cur_patch, base):
 		for champ in champs_list:
 			cur_champ = champs_list[champ]
-			print(cur_champ)
 			champ_id = cur_champ.champ_id
+			#champ_file = open("result.txt", "w")
+			print("champ: ", champ_id, " number of roles: ", len(cur_champ.roles))
 			if(champ_id != -1):
 				region = base.region
 				league = base.leagueTier
-				self.create_champ_overall_stats(region, cur_champ)
+				#hamp_file.write("Region: " + region + " League: " + league + "\n")
+				#champ_file.write(champ_id + "\n")
+				champ_table_data = ChampBase.get(ChampBase.champId == champ_id)
+				overall = self.create_champ_overall_stats(region, cur_champ, champ_table_data)
 				for role, stats in cur_champ.roles.items():
-					print("role: ", role)
-					self.add_players_db(self.create_champ_basic(champ_id, role), region, stats["players"])
-					cur_champ.get_best_players(role)
+					print("champ: ", champ_id, " role: ", role)
+					#self.add_players_db(self.create_champ_basic(champ_id, role), region, stats["players"])
+					#cur_champ.get_best_players(role)
 					#cur_champ.sort_matchups(role)
-					champ_role_overall_q = ChampOverallStatsByRole.select().join(ChampStatsByRank).switch(ChampStatsByRank).join(StatsBase).where(
-										ChampOverallStatsByRole.role == role,
-										ChampStatsByRank.champId == champ_id,
-										StatsBase.region == region,
+					champ_role_overall_q = ChampStatsByRole.select().join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+										ChampStatsByRole.role == role,
+										ChampBase.champId == champ_id,
+										ChampOverallStats.region == region
 										)
 					contribution_stats = {"dpg": stats["damage_dealt_per_gold"],
 									"dmpg": stats["damage_mitigated_per_gold"],
 									"visScore": stats["vision"],
 									"objScore": stats["objectives"]
 									}
-					champ = champ_id
-					print("id: ", champ, " role: ", role)
+					print("overall row: ", overall.champ.name)
 					#print("total plays: ", cur_champ.plays, " this role patch stats: ", stats["patches_stats"])
 					if(not champ_role_overall_q.exists()):
 						print("overall does not exist: ", champ_id, " role: ", role)
-						all_overall = ChampOverallStatsByRole.select().join(ChampStatsByRank).join(StatsBase).where(
-							ChampStatsByRank.champId == champ_id,
-							StatsBase.region == region
-							)
-						for old_role in all_overall:
+						all_role_overall = ChampStatsByRole.select().join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+										ChampBase.champId == champ_id,
+										ChampOverallStats.region == region
+									)
+						for old_role in all_role_overall:
 							print("roles from db: ", old_role.role)
-						role_overall = self.create_champ_role_stats(stats, role, cur_patch, league)
-						self.create_champ_rank_stats(contribution_stats, stats, cur_champ, base, cur_patch, role, role_overall)
+						role_overall = self.create_champ_role_stats(stats, role, cur_patch, league, overall)
+						self.create_champ_rank_stats(contribution_stats, stats, cur_champ, base, cur_patch, role_overall)
 						#self.add_players_to_db(champ_overall, stats["players"], cur_champ.champ_id, role)
 					else:
 						role_overall = champ_role_overall_q.get()
 						print("t plays: ", role_overall.roleTotalPlays)
 						self.update_role_stats(role_overall, stats, cur_patch, league)
-						league_tier_stats_q = ChampStatsByRank.select().join(StatsBase).switch(ChampStatsByRank).join(ChampOverallStatsByRole).where(
-							StatsBase.leagueTier == league, ChampStatsByRank.champId == champ_id, 
-							StatsBase.region == region, ChampOverallStatsByRole.role == role)
+						league_tier_stats_q = ChampStatsByRank.select(ChampStatsByRank, ChampStatsByRole, 
+							StatsBase).join(StatsBase).switch(ChampStatsByRank).join(ChampStatsByRole).switch(ChampStatsByRole).join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+							StatsBase.leagueTier == league, ChampBase.champId == champ_id, 
+							StatsBase.region == region, ChampStatsByRole.role == role)
 						if(league_tier_stats_q.exists()):
 							self.update_rank_stats(league_tier_stats_q.get(), stats, contribution_stats)
 						else:
 							if(role_overall.addons == None and league != "silverMinus"):
 								role_overall.addons = self.create_champ_addons(stats, league)
 								role_overall.save()
-							self.create_champ_rank_stats(contribution_stats, stats, cur_champ, base, cur_patch, role, role_overall)
-	
+							self.create_champ_rank_stats(contribution_stats, stats, cur_champ, base, cur_patch, role_overall)
+
 	def update_patch_stats(self, old_patch_stats, new_patch_stats):
 		for patch,val in new_patch_stats.items():
 			print("patch: ", patch, " val: ", val)
@@ -515,13 +521,11 @@ class DBHandler:
 			old_data.roleTotalPlays += new_data["t_plays"]
 			old_data.roleTotalWins += new_data["t_wins"]
 			old_data.roleTotalRating += new_data["t_rating"]	
-			old_data.roleCCDealt += new_data["cc_dealt"]
 			old_data.laning += new_data["laning"]
 		else:
 			old_data.roleTotalPlays += new_data.roleTotalPlays
 			old_data.roleTotalWins += new_data.roleTotalWins
 			old_data.roleTotalRating += new_data.roleTotalRating
-			old_data.roleCCDealt += new_data.roleCCDealt
 		old_data.save()
 
 	def update_rank_stats(self, old_champ_stats, new_stats, new_game_scores):
@@ -546,6 +550,7 @@ class DBHandler:
 		old_champ_stats.deaths += new_stats["kda"]["deaths"]
 		old_champ_stats.assists += new_stats["kda"]["assists"]
 		old_champ_stats.cspm += new_stats["cspm"]
+		old_champ_stats.ccDealt = new_stats["cc_dealt"]
 		old_champ_stats.gpm += new_stats["gpm"]
 		old_champ_stats.save()
 
@@ -583,9 +588,9 @@ class DBHandler:
 
 	def print_data(self, static=True):
 		"""
-		roles = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).join(StatsBase).where(
+		roles = ChampStatsByRole.select(ChampStatsByRole, ChampStatsByRank).join(ChampStatsByRank).join(StatsBase).where(
 			StatsBase.region == "NA",
-			ChampStatsByRank.champId == 1
+			ChampStatsByRank.overall.champ.champId == 1
 			)
 		
 		champs = ChampStatsByRank.select().join(StatsBase).where(StatsBase.region == "EUW")
@@ -624,17 +629,17 @@ class DBHandler:
 		ItemBase.delete().where(ItemBase.itemId != None).execute()
 
 	def remove_db_items(self):
-		ChampOverallStats.delete().where(ChampOverallStats.champId == -1).execute()
+		ChampOverallStats.delete().where(ChampOverallStats.champ.champId == -1).execute()
 
 	def merge_roles(self):
-		bot_champs_and_roles = ChampOverallStatsByRole.select().where(
-			(ChampOverallStatsByRole.role == "Bot Support") | (ChampOverallStatsByRole.role == "Bot Carry"))
+		bot_champs_and_roles = ChampStatsByRole.select().where(
+			(ChampStatsByRole.role == "Bot Support") | (ChampStatsByRole.role == "Bot Carry"))
 		"""
 		for champ_role in bot_champs_and_roles:
 			if(champ_role.role == "Bot Support"):
-				old_support_data = ChampOverallStatsByRole.select().join(ChampStatsByRank).where(
-					ChampOverallStatsByRole.role == "Support",
-					ChampStatsByRank.champId == champ_role.stats_by_league.get().champId
+				old_support_data = ChampStatsByRole.select().join(ChampStatsByRank).where(
+					ChampStatsByRole.role == "Support",
+					ChampStatsByRank.overall.champ.champId == champ_role.stats_by_league.get().champId
 					)
 				if(old_support_data.exists()):
 					self.update_role_stats(champ_role, old_support_data.get(), "7.14.1", "diamondPlus", True)
@@ -642,9 +647,9 @@ class DBHandler:
 					champ_role.role = "Support"
 					champ_role.save()					
 			elif(champ_role.role == "Bot Carry"):
-				old_adc_data = ChampOverallStatsByRole.select().join(ChampStatsByRank).where(
-					ChampOverallStatsByRole.role == "ADC",
-					ChampStatsByRank.champId == champ_role.stats_by_league.get().champId
+				old_adc_data = ChampStatsByRole.select().join(ChampStatsByRank).where(
+					ChampStatsByRole.role == "ADC",
+					ChampStatsByRank.overall.champ.champId == champ_role.stats_by_league.get().champId
 					)
 				if(old_adc_data.exists()):
 					self.update_role_stats(champ_role, old_adc_data.get(), "7.14.1", "diamondPlus", True)
@@ -656,8 +661,8 @@ class DBHandler:
 			champ_role.delete_instance()
 
 	def delete_dups(self):
-		dups = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).switch(ChampStatsByRank).join(StatsBase).where(
-			ChampStatsByRank.champId == 1,
+		dups = ChampStatsByRole.select(ChampStatsByRole, ChampStatsByRank).join(ChampStatsByRank).switch(ChampStatsByRank).join(StatsBase).where(
+			ChampStatsByRank.overall.champ.champId == 1,
 			StatsBase.region == "NA"
 			).aggregate_rows()
 		for champ_role in dups:
@@ -714,11 +719,14 @@ class DBHandler:
 	def add_champ_roles(self):
 		all_champs = ChampBase.select()
 		for champ in all_champs:
-			champ_overall = ChampOverallStats.select().where(ChampOverallStats.champId == champ.champId)
+			champ_overall = ChampOverallStats.select().where(ChampOverallStats.champ.champId == champ.champId)
 			total_plays = 0
 			for region in champ_overall:
 				total_plays +=  region.totalPlays
-			champ_roles = ChampOverallStatsByRole.select(ChampOverallStatsByRole, ChampStatsByRank).join(ChampStatsByRank).where(ChampStatsByRank.champId == champ.champId).aggregate_rows()
+			champ_roles = ChampStatsByRole.select().join(ChampOverallStats).switch(ChampOverallStats).join(ChampBase).where(
+										ChampBase.champId == champ_id,
+										ChampOverallStats.region == region
+										)
 			roles = {}
 			print("champ: ", champ.name)
 			for champ_role in champ_roles:
@@ -737,9 +745,27 @@ class DBHandler:
 				print("role: ", role, " playrate: ", (plays/total_plays)*100)
 			#time.sleep(5)
 
+	def test(self):
+		na_champs = ChampOverallStats.select().where(ChampOverallStats.region == "NA")
+		euw_champs = ChampOverallStats.select().where(ChampOverallStats.region == "EUW")
+		eune_champs = ChampOverallStats.select().where(ChampOverallStats.region == "EUNE")
+		kr_champs = ChampOverallStats.select().where(ChampOverallStats.region == "KR")
+		na_file = open("na-champs.txt", "w")
+		eune_file = open("eune-champs.txt", "w")
+		euw_file = open("euw-champs.txt", "w")
+		kr_file = open("kr-champs.txt", "w")		
+		for champ in na_champs:
+			na_file.write("Champ: " + champ.champ.name + " wins: " + str(champ.totalWins) + " plays: " + str(champ.totalPlays) + " r: " + str(champ.totalRating) + "\n")
+		for champ in euw_champs:
+			euw_file.write("Champ: " + champ.champ.name + " wins: " + str(champ.totalWins) + " plays: " + str(champ.totalPlays) + " r: " + str(champ.totalRating) + "\n")
+		for champ in eune_champs:
+			eune_file.write("Champ: " + champ.champ.name + " wins: " + str(champ.totalWins) + " plays: " + str(champ.totalPlays) + " r: " + str(champ.totalRating) + "\n")
+		for champ in kr_champs:
+			kr_file.write("Champ: " + champ.champ.name + " wins: " + str(champ.totalWins) + " plays: " + str(champ.totalPlays) + " r: " + str(champ.totalRating) + "\n")
+
 	def close(self):
 		postgres_db.close()
 
 if __name__=="__main__":
 	test = DBHandler()
-	test.add_champ_roles()
+	test.test()
