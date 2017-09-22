@@ -5,7 +5,8 @@ window.onload = function(){
 
 	modifyLayout();
 	colorCodeStats();
-
+	activateTableSorting();
+	
 	$("#more").on("click", function(){
 		if($(this).text() == "Show More"){
 			$(this).text("Show Less");
@@ -39,6 +40,18 @@ window.onload = function(){
 		});
 
 	$('[data-toggle="tooltip"]').tooltip()
+
+	function activateTableSorting(){
+    	table1 = $("#homepage-opening-tables-1").DataTable({searching: false, info: false, paging: false});
+    	table2 = $("#homepage-opening-tables-2").DataTable({searching: false, info: false, paging: false});
+    	table3 = $("#homepage-opening-tables-3").DataTable({searching: false, info: false, paging: false});
+	}
+
+	function destroyTables(){
+    	table1.destroy();
+       	table2.destroy();
+    	table3.destroy();		
+	}
 
 	function get_champ_base_avg(){
 	    var rawFile = new XMLHttpRequest();
@@ -308,6 +321,7 @@ window.onload = function(){
     	console.log(region);
     	var d = new Date()
     	var start_time = d.getTime()/1000;
+    	destroyTables();
        	$.getJSON('/_region_overall_stats', {
         	region: region
         }, function(data) {
@@ -355,6 +369,7 @@ window.onload = function(){
 	        		}
         		}
         	}
+       		activateTableSorting();
         	colorCodeStats();
 	    	$("#chart-loading-bar").addClass("hidden");
 	    	$("#opening-tables").removeClass("hidden");
