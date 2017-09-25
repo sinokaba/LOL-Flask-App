@@ -19,61 +19,118 @@ class DBHandler:
 			tag2 = champ_data["tags"][1]
 		else:
 			tag2 = None 
-		ChampBase.create(
-			champId = champ_id,
-			name = champ_data["name"].strip(),
-			image = champ_data["image"],
-			abilities = cPickle.dumps(champ_data["abilities"]),
-			passive = cPickle.dumps(champ_data["passive"]),
-			tips = cPickle.dumps(champ_data["tips"]),
-			statsRanking = cPickle.dumps(champ_data["stats_ranking"]),
-			tag1 = tag1,
-			tag2 = tag2,
-			role1 = None,
-			role2 = None,
-			aaRange	= champ_data["stats"]["attackrange"],
-			resource = champ_data["resource"],
-			movespeed = champ_data["stats"]["movespeed"],
-			armor = champ_data["stats"]["armor"],
-			armorPL = champ_data["stats"]["armorperlevel"],
-			ad = champ_data["stats"]["attackdamage"],
-			adPL = champ_data["stats"]["attackdamageperlevel"],
-			hp = champ_data["stats"]["hp"],
-			hpPL = champ_data["stats"]["hpperlevel"],
-			hpRegen = champ_data["stats"]["hpregen"],
-			hpRegenPL = champ_data["stats"]["hpregenperlevel"],
-			mr = champ_data["stats"]["spellblock"],
-			mrPL = champ_data["stats"]["spellblockperlevel"],
-			attackspeed = champ_data["stats"]["attackspeed"],
-			attackspeedPL = champ_data["stats"]["attackspeedperlevel"],
-			mana = champ_data["stats"]["mp"],
-			manaPL = champ_data["stats"]["mpperlevel"],
-			manaRegen = champ_data["stats"]["mpregen"],
-			manaRegenPL = champ_data["stats"]["mpregenperlevel"]	
-		)
+		champ_q = ChampBase.select().where(ChampBase.champId == champ_id)
+		if(not champ_q.exists()):
+			ChampBase.create(
+				champId = champ_id,
+				title = champ_data["title"],
+				name = champ_data["name"].strip(),
+				image = champ_data["image"],
+				abilities = cPickle.dumps(champ_data["abilities"]),
+				passive = cPickle.dumps(champ_data["passive"]),
+				tips = cPickle.dumps(champ_data["tips"]),
+				statsRanking = cPickle.dumps(champ_data["stats_ranking"]),
+				tag1 = tag1,
+				tag2 = tag2,
+				role1 = None,
+				role2 = None,
+				aaRange	= champ_data["stats"]["attackrange"],
+				resource = champ_data["resource"],
+				movespeed = champ_data["stats"]["movespeed"],
+				armor = champ_data["stats"]["armor"],
+				armorPL = champ_data["stats"]["armorperlevel"],
+				ad = champ_data["stats"]["attackdamage"],
+				adPL = champ_data["stats"]["attackdamageperlevel"],
+				hp = champ_data["stats"]["hp"],
+				hpPL = champ_data["stats"]["hpperlevel"],
+				hpRegen = champ_data["stats"]["hpregen"],
+				hpRegenPL = champ_data["stats"]["hpregenperlevel"],
+				mr = champ_data["stats"]["spellblock"],
+				mrPL = champ_data["stats"]["spellblockperlevel"],
+				attackspeed = champ_data["stats"]["attackspeed"],
+				attackspeedPL = champ_data["stats"]["attackspeedperlevel"],
+				mana = champ_data["stats"]["mp"],
+				manaPL = champ_data["stats"]["mpperlevel"],
+				manaRegen = champ_data["stats"]["mpregen"],
+				manaRegenPL = champ_data["stats"]["mpregenperlevel"]	
+			)
+		else:
+			champ = champ_q.get()
+			champ.title = champ_data["title"]
+			champ.name = champ_data["name"].strip()
+			champ.image = champ_data["image"]
+			champ.abilities = cPickle.dumps(champ_data["abilities"])
+			champ.passive = cPickle.dumps(champ_data["passive"])
+			champ.tips = cPickle.dumps(champ_data["tips"])
+			champ.statsRanking = cPickle.dumps(champ_data["stats_ranking"])
+			champ.tag1 = tag1
+			champ.tag2 = tag2
+			champ.aaRange	= champ_data["stats"]["attackrange"]
+			champ.resource = champ_data["resource"]
+			champ.movespeed = champ_data["stats"]["movespeed"]
+			champ.armor = champ_data["stats"]["armor"]
+			champ.armorPL = champ_data["stats"]["armorperlevel"]
+			champ.ad = champ_data["stats"]["attackdamage"]
+			champ.adPL = champ_data["stats"]["attackdamageperlevel"]
+			champ.hp = champ_data["stats"]["hp"]
+			champ.hpPL = champ_data["stats"]["hpperlevel"]
+			champ.hpRegen = champ_data["stats"]["hpregen"]
+			champ.hpRegenPL = champ_data["stats"]["hpregenperlevel"]
+			champ.mr = champ_data["stats"]["spellblock"]
+			champ.mrPL = champ_data["stats"]["spellblockperlevel"]
+			champ.attackspeed = champ_data["stats"]["attackspeed"]
+			champ.attackspeedPL = champ_data["stats"]["attackspeedperlevel"]
+			champ.mana = champ_data["stats"]["mp"]
+			champ.manaPL = champ_data["stats"]["mpperlevel"]
+			champ.manaRegen = champ_data["stats"]["mpregen"]
+			champ.manaRegenPL = champ_data["stats"]["mpregenperlevel"]
+			champ.save()
 
 	def create_spell_info(self, spell_id, spell_data):
-		SpellBase.create(
-			spellId = spell_id,
-			name = spell_data["name"],
-			image = spell_data["image"],
-			des = spell_data["des"]
-		)
+		spell_q = SpellBase.select().where(SpellBase.spellId == spell_id)
+		if(not spell_q.exists()):
+			SpellBase.create(
+				spellId = spell_id,
+				name = spell_data["name"],
+				image = spell_data["image"],
+				des = spell_data["des"]
+			)
+		else:
+			spell = spell_q.get()
+			spell.name = spell_data["name"]
+			spell.image = spell_data["image"]
+			spell.des = spell_data["des"]
+			spell.save()
 
 	def create_mastery_info(self, mastery_id, mastery_data):
-		MasteryBase.create(
-			masteryId = mastery_id,
-			name = mastery_data["name"],
-			des = mastery_data["description"][0]
-		)
+		mastery_q = MasteryBase.select().where(MasteryBase.masteryId == mastery_id)
+		if(not mastery_q.exists()):
+			MasteryBase.create(
+				masteryId = mastery_id,
+				name = mastery_data["name"],
+				des = mastery_data["description"][0]
+			)
+		else:
+			mastery = mastery_q.get()
+			mastery.name = mastery_data["name"]
+			mastery.des = mastery_data["description"][0]
+			mastery.save()
 
 	def create_rune_info(self, rune_data):
-		RuneBase.create(
-			runeId = rune_data["id"],
-			name = rune_data["name"],
-			image = rune_data["image"]["full"],
-			des = rune_data["description"]
-		)
+		rune_q = RuneBase.select().where(RuneBase.runeId == rune_data["id"])
+		if(not rune_q.exists()):
+			RuneBase.create(
+				runeId = rune_data["id"],
+				name = rune_data["name"],
+				image = rune_data["image"]["full"],
+				des = rune_data["description"]
+			)
+		else:
+			rune = rune_q.get()
+			rune.name = rune_data["name"]
+			rune.image = rune_data["image"]["full"]
+			rune.des = rune_data["description"]	
+			rune.save()
 
 	def create_item_info(self, item_id, item_tags, item_data):
 		if("sanitizedDescription" in item_data):
@@ -280,7 +337,6 @@ class DBHandler:
 			deaths = rank_stats["kda"]["deaths"],
 			assists = rank_stats["kda"]["assists"],
 			cspm = rank_stats["cspm"],
-			ccDealt = rank_stats["cc_dealt"],
 			gpm = rank_stats["gpm"],
 			resultByTime = cPickle.dumps(rank_stats["game_result"]),
 			baseInfo = base,
@@ -395,11 +451,16 @@ class DBHandler:
 										ChampBase.champId == champ_id,
 										ChampOverallStats.region == region
 										)
-					contribution_stats = {"dpg": stats["damage_dealt_per_gold"],
-									"dmpg": stats["damage_mitigated_per_gold"],
-									"visScore": stats["vision"],
-									"objScore": stats["objectives"]
-									}
+					contribution_stats = {
+										"dpg": stats["dpg"],
+										"dmpg": stats["dmpg"],
+										"visScore": stats["vision"],
+										"objScore": stats["objectives"],
+										"magic_dmg": stats["magic"],
+										"true_dmg": stats["true"],
+										"physical_dmg": stats["physical"],
+										"cc": stats["cc"]
+										}
 					print("overall row: ", overall.champ.name)
 					#print("total plays: ", cur_champ.plays, " this role patch stats: ", stats["patches_stats"])
 					if(not champ_role_overall_q.exists()):
@@ -447,7 +508,7 @@ class DBHandler:
 					if(attribute == "skill order"):
 						if(len(new) > len(old)):
 							old,new = new,old
-					print("old: ", old, "\n", " new: ", new)
+					#print("old: ", old, "\n", " new: ", new)
 					for old_type,old_values in old.items():
 						if(old_type in new):
 							for item,data in new[old_type].items():
@@ -531,27 +592,19 @@ class DBHandler:
 	def update_rank_stats(self, old_champ_stats, new_stats, new_game_scores):
 		old_champ_stats.patchStats = self.update_patches_stats(cPickle.loads(old_champ_stats.patchStats), new_stats["patches_stats"])
 		old_champ_stats.resultByTime = self.update_game_results(cPickle.loads(old_champ_stats.resultByTime), new_stats["game_result"])
-
 		old_game_stats = cPickle.loads(old_champ_stats.gameStats)
-		old_game_stats["dpg"] += new_game_scores["dpg"]
-		old_game_stats["dmpg"] += new_game_scores["dmpg"]
-		old_game_stats["visScore"] += new_game_scores["visScore"]
-		old_game_stats["objScore"] += new_game_scores["objScore"]
-		"""
-		for game_stat,val in old_game_stats.items():
-			print("current stat name: ", game_stat, " current value: ", val, " new val: ", new_game_scores[game_stat])
-			val += new_game_scores[game_stat]
-			print("val after: ", val)
-			#time.sleep(3)
-		"""
+		for stat,val in new_game_scores.items():
+			if(stat in old_game_stats):
+				old_game_stats[stat] += val
+			else:
+				old_game_stats[stat] = val
 		old_champ_stats.gameStats = cPickle.dumps(old_game_stats)
-
 		old_champ_stats.kills += new_stats["kda"]["kills"]
 		old_champ_stats.deaths += new_stats["kda"]["deaths"]
 		old_champ_stats.assists += new_stats["kda"]["assists"]
 		old_champ_stats.cspm += new_stats["cspm"]
-		old_champ_stats.ccDealt = new_stats["cc_dealt"]
 		old_champ_stats.gpm += new_stats["gpm"]
+
 		old_champ_stats.save()
 
 	def update_game_results(self, old_game_res, new_game_res):
@@ -607,6 +660,9 @@ class DBHandler:
 				print("duppp")
 
 	def clear_db(self):
+		self.drop_tables(None)
+
+	def drop_tables(self, table_names=None):
 		conn = psycopg2.connect("dbname=" + db_name + " user='postgres' password='1WILLchange!'")
 		conn.set_isolation_level(0)
 		cur = conn.cursor()
@@ -614,19 +670,13 @@ class DBHandler:
 			cur.execute("SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_schema,table_name")
 			rows = cur.fetchall()
 			for row in rows:
-				print("dropping table: ", row[1])   
-				cur.execute("drop table " + row[1] + " cascade") 
+				if(table_names is None or row[1].lower() in table_names):
+					print("dropping table: ", row[1].lower())   
+					cur.execute("drop table " + row[1] + " cascade") 
 			cur.close()
 			conn.close()
 		except:
 			print("Error: ", sys.exc_info()[1])
-
-	def clear_static_data(self):
-		RuneBase.delete().where(RuneBase.runeId != None).execute()
-		ChampBase.delete().where(ChampBase.champId != None).execute()
-		SpellBase.delete().where(SpellBase.spellId != None).execute()
-		MasteryBase.delete().where(MasteryBase.masteryId != None).execute()
-		ItemBase.delete().where(ItemBase.itemId != None).execute()
 
 	def remove_db_items(self):
 		ChampOverallStats.delete().where(ChampOverallStats.champ.champId == -1).execute()
@@ -766,6 +816,17 @@ class DBHandler:
 	def close(self):
 		postgres_db.close()
 
+
+def write_champid_name_to_file():
+	all_champs = ChampBase.select()
+	champs_id_name = open("champs_id_name.txt", "w")
+	for champ in all_champs:
+		champs_id_name.write(str(champ.champId) + " : " + champ.name + "\n")
+	champs_id_name.close()
+
 if __name__=="__main__":
+	"""
 	test = DBHandler()
 	test.test()
+	"""
+	write_champid_name_to_file()

@@ -83,8 +83,10 @@ def valid_name(name):
 
 @app.route('/<region>/champ/<name>')
 def get_champ(name, region):
+	riot_api.set_region(region)
 	#should display 3 roles at most to avoid awkward formatting
 	this_patch = CURRENT_PATCH
+	current_patch = riot_api.get_latest_cdn_ver()
 	if(name != "Wukong"):
 		champ_key = name
 	else:
@@ -507,20 +509,21 @@ def region_overall_stats(region):
 			print("name: ", name, " role: ", champion.role)
 			if("Bot" in champion.role):
 				champion.role = champion.role.split(" ")[1]
-			if((champion.roleTotalPlays >= num_games*.017) and len(top_5_champs) < 5):
-				#print("name: ", name)
-				top_5_champs.append({
-					"name":name, "role":champion.role, 
-					"wr":winrate, 
-					"rating":rating
-				})
-			elif(len(top_5_offmeta_champs) < 5 and ((.001 < (champion.roleTotalPlays/num_games) <= .005) and (champion.roleTotalPlays/champ_total_plays >= .05))):
-				top_5_offmeta_champs.append({
-					"name":name, 
-					"role":champion.role, 
-					"wr":winrate, 
-					"rating":rating
-				})		
+			if(winrate >= 49):
+				if((champion.roleTotalPlays >= num_games*.017) and len(top_5_champs) < 5):
+					#print("name: ", name)
+					top_5_champs.append({
+						"name":name, "role":champion.role, 
+						"wr":winrate, 
+						"rating":rating
+					})
+				elif(len(top_5_offmeta_champs) < 5 and ((.001 < (champion.roleTotalPlays/num_games) <= .005) and (champion.roleTotalPlays/champ_total_plays >= .05))):
+					top_5_offmeta_champs.append({
+						"name":name, 
+						"role":champion.role, 
+						"wr":winrate, 
+						"rating":rating
+					})		
 		else:
 			break
 	#print("top 5 champs: ", top_5_champs)
