@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/xregexp.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script> 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
@@ -178,9 +177,6 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.13/js/dataTables.bootstrap4.min.js"></script>
       <script>
-        $("#homepage-opening-tables-1").DataTable({searching: false, info: false, paging: false});
-        $("#homepage-opening-tables-2").DataTable({searching: false, info: false, paging: false});
-        $("#homepage-opening-tables-3").DataTable({searching: false, info: false, paging: false});
         var label = $("#{{ region }}").parent();
         label.toggleClass("active")
         console.log(label);
