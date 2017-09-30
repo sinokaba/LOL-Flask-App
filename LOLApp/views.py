@@ -545,10 +545,21 @@ def get_summoner(name, region):
 	print(summoner_data.account_exists(), lvl)
 	if(summoner_data.account_exists() and lvl >= 30):
 		print(summoner_data.acc_id)
-		league_data = cache.get(region+"-league_data-"+name)		
+		player_q = PlayerBasic.select().where(PlayerBasic.accountId == summoner_data.acc_id, PlayerBasic.region == region)
+		league_data = cache.get(region+"-league_data-"+name)	
 		match_history = cache.get(region+"-mh-"+name)
 		if(match_history is None or league_data is None):
-			league_data = summoner_data.get_league_rank()
+			if(player_q.exists()):
+				league_data = _pickle.loads(player_q)
+			else:
+				league_data = summoner_data.get_league_rank()
+				PlayerBasic.create(
+					accountId = summoner_data.acc_id,
+					region = region,
+					name = summoner_data.name,
+					rank = _pickle.dumps(league_data),
+					summonerId = summoner_data.summ_id
+					)
 			match_history = summoner_data.get_ranked_match_history()
 			cache.set(region+"-mh-"+name, match_history, timeout=3600)
 			cache.set(region+"-league_data-"+name, league_data, timeout=7200)
