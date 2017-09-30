@@ -136,7 +136,7 @@ class PlayerRankStats(BaseModel):
 	rating = FloatField()
 	wins = IntegerField()
 	plays = IntegerField()
-	champs = ForeignKeyField(ChampOverallStats(), related_name="players")
+	champs = ForeignKeyField(ChampOverallStats, related_name="players")
 	#champInfo = ForeignKeyField(ChampStatsByRole, related_name="players")
 	class Meta:
 		order_by = ('-rating','plays')
