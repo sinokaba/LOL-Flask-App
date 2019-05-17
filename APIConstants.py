@@ -28,7 +28,7 @@ API_VERSION = '3'
 CURRENT_PATCH = '7.16.1'
 LAST_PATCH = '7.15.1'
 
-API_KEY = 'RGAPI-db236f3d-f586-4bfe-bba3-ed49d8196590'
+API_KEY = <your_api_key>
 
 PLATFORMS = {
 	"NA": 'NA1',
